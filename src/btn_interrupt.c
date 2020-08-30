@@ -22,7 +22,7 @@ const sk_pin swt5_btn = { .port=PORTC, .pin=8, .isinverse=true};
  */
 void sk_inter_exti_init(sk_pin pin, enum exti_trigger_type trig)
 {
-	exti_select_source((1 << pin.pin), pin.port);
+	exti_select_source((1 << pin.pin), sk_pin_port_to_gpio(pin.port));
 	exti_set_trigger((1 << pin.pin), trig);
 	exti_enable_request((1 << pin.pin));
 	exti_reset_request((1 << pin.pin));
@@ -57,6 +57,7 @@ void exti15_10_isr(void)
 		sk_pin_toggle(led_blue);
 		exti_reset_request((1 << swt1_btn.pin));
 	}
+	softdelay(2000);
 	if (!sk_pin_read(swt2_btn)) {
 		all_led_set(false);
 		exti_reset_request((1 << swt2_btn.pin));
@@ -71,10 +72,12 @@ void exti9_5_isr(void)
 		sk_pin_toggle(led_orange);
 		exti_reset_request((1 << swt3_btn.pin));
 	}
+	softdelay(2000);
 	if (!sk_pin_read(swt4_btn)) {
 		sk_pin_toggle(led_red);
 		exti_reset_request((1 << swt4_btn.pin));
 	}
+	softdelay(2000);
 	if (!sk_pin_read(swt5_btn)) {
 		sk_pin_toggle(led_green);
 		exti_reset_request((1 << swt5_btn.pin));
@@ -107,9 +110,9 @@ int main(void)
         //Set priority group. Programing manual p.228.
         scb_set_priority_grouping(SCB_AIRCR_PRIGROUP_GROUP4_SUB4);
         uint8_t group = 0;
-        uint8_t subgroup = 0;
+        uint8_t subgroup = 1;
         nvic_set_priority(NVIC_EXTI9_5_IRQ, (group << 2) | subgroup);
-	nvic_set_priority(NVIC_EXTI15_10_IRQ, ((1 + group) << 2) | (1 + subgroup));
+	nvic_set_priority(NVIC_EXTI15_10_IRQ, ((1 + group) << 2) | subgroup);
 
         sk_inter_exti_init(swt1_btn, EXTI_TRIGGER_FALLING);
 	sk_inter_exti_init(swt2_btn, EXTI_TRIGGER_FALLING);
@@ -124,10 +127,10 @@ int main(void)
         cm_enable_interrupts();
 
 	//leds off
-	//all_led_set(false);
+	all_led_set(false);
+
 
         while(1) {
-		softdelay(1000000);
-		sk_pin_toggle(led_green);
+
         }
 }
