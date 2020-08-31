@@ -67,20 +67,20 @@ uint16_t sk_pin_group_read(sk_pin_group group)
 {
 	uint16_t val = gpio_port_read(sk_pin_port_to_gpio(group.port));
 	val ^= group.inversions;
-	return group_densify(group.pins, val);  
+	return group_densify(group.pins, val);
 }
 
 
 void sk_pin_group_set(sk_pin_group group, uint16_t val)
 {
-	val = group_sparsify(group.pins, val);  
+	val = group_sparsify(group.pins, val);
 	val ^= group.inversions;
 	//ODR: output data register
-	volatile uint32_t *odr = &GPIO_ODR(sk_pin_port_to_gpio(group.port)); 
+	volatile uint32_t *odr = &GPIO_ODR(sk_pin_port_to_gpio(group.port));
 	uint32_t pval = *odr;
 	pval &= ~((uint32_t)(group.pins));	// reset all pins in account
 	pval |= val;			// set all pins in account to our values
-	*odr = pval; 
+	*odr = pval;
 }
 
 
@@ -98,6 +98,7 @@ void sk_pin_mode_setup(sk_pin pin, enum sk_mode mode)
 }
 
 
-
-
-
+void sk_pin_group_mode_setup(sk_pin_group group, enum sk_mode mode)
+{
+	gpio_mode_setup(sk_pin_port_to_gpio(group.port), mode, 0x0, group.pins);
+}

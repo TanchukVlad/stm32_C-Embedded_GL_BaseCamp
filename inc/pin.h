@@ -25,8 +25,8 @@ enum sk_port {
 enum sk_mode {
 	MODE_INPUT = GPIO_MODE_INPUT,
 	MODE_OUTPUT = GPIO_MODE_OUTPUT,
-	MODE_AF = GPIO_MODE_OUTPUT,                   
-	MODE_ANALOG = GPIO_MODE_OUTPUT                
+	MODE_AF = GPIO_MODE_AF,
+	MODE_ANALOG = GPIO_MODE_ANALOG
 };
 
 
@@ -37,9 +37,9 @@ struct sk_attr_pack(1) sk_pin {
 	/** Port value */
 	uint8_t port : 3;  // 8 ports, so 3-bit enough for packing -> 2^3 = 8
 	/** Pin number (0 ... 15) */
-	uint8_t pin : 4;  // 16 pins, so 4-bit enogh for packing -> 2^4 = 16 
+	uint8_t pin : 4;  // 16 pins, so 4-bit enogh for packing -> 2^4 = 16
 	/** If port should be inversted, will be set to true */
-	uint8_t isinverse : 1; 
+	uint8_t isinverse : 1;
 };
 
 
@@ -48,9 +48,9 @@ struct sk_attr_pack(1) sk_pin {
  * Represents group of pins residing in the same GPIO port.
  */
 struct sk_attr_pack(1) sk_pin_group {
-	/** Port value */	
+	/** Port value */
 	uint16_t port : 3;  // 8 ports, so 3-bit enough for packing -> 2^3 = 8
-	/** For future use */	
+	/** For future use */
 	uint16_t __reserved : 13;
 	/** 16-bit value where each bit represents corresponding pin in a port */
 	uint16_t pins;
@@ -63,14 +63,14 @@ typedef struct sk_pin sk_pin;
 typedef struct sk_pin_group sk_pin_group;
 
 
-/** 
+/**
  * Take port number and return base for port.
- * Map sk_port definitions to libopencm3 GPIOx. Intended mainly for private use. 
+ * Map sk_port definitions to libopencm3 GPIOx. Intended mainly for private use.
  * Faster and more concise than building 1:1 map.
  * Benefit from memory locations of GPIO registers.
- * GPIO_PORT_B_BASE - GPIO_PORT_A_BASE size between PORTA and PORTB multiply by port number 
+ * GPIO_PORT_B_BASE - GPIO_PORT_A_BASE size between PORTA and PORTB multiply by port number
  * and sum on PORTA
- * Result: we have base for our port  
+ * Result: we have base for our port
  */
 inline sk_attr_alwaysinline uint32_t sk_pin_port_to_gpio(enum sk_port port)
 {
@@ -87,8 +87,8 @@ inline sk_attr_alwaysinline uint32_t sk_pin_port_to_gpio(enum sk_port port)
  * For the means of improved speed, directly reads port input register and performs no checks
  * that the pin is really set to input.
  * The user is responsible for checking pin configuration validity.
- * 
- * Inversion is taken into account as specified in :c:type:`sk_pin` 
+ *
+ * Inversion is taken into account as specified in :c:type:`sk_pin`
  */
 bool sk_pin_read(sk_pin pin);
 
@@ -121,7 +121,7 @@ void sk_pin_toggle(sk_pin pin);
  * Read group of pins and return collected value.
  * @group: pin group (:c:type:`sk_pin_group`)
  * @return: densified value read from specified :c:member:`sk_pin_group.pins`
- * 
+ *
  * Only the pins specified in :c:type:`sk_pin_group` are collected in the resulting value applying
  * densification.
  * If :c:member:`sk_pin_group.pins` are specified, for example as 0b0010100100001100,
@@ -135,7 +135,7 @@ uint16_t sk_pin_group_read(sk_pin_group group);
  * Set group of pins to the provided (densified) value
  * @group: pin group (:c:type:`sk_pin_group`)
  * @values: densified value specifying which pins to set
- * 
+ *
  * Only the pins specified in :c:type:`sk_pin_group` are affected by set operation.
  * If :c:member:`sk_pin_group.pins` are specified, for example as 0b0101000000000011,
  * and `values` is set to 0b000011110000ABCD, the resulting GPIO value will be
@@ -165,11 +165,17 @@ void sk_pin_group_toggle(sk_pin_group group, uint16_t val);
 
 /**
  * Set pin mode
- * @mode: pin mode is taken from libopencm3 
+ * @mode: pin mode is taken from libopencm3
  *
  * Doesn't set pull up and pull down.
  */
 void sk_pin_mode_setup(sk_pin pin, enum sk_mode mode);
 
 
-
+/**
+ * Set pin group mode
+ * @mode: pin mode is taken from libopencm3
+ *
+ * Doesn't set pull up and pull down.
+ */
+void sk_pin_group_mode_setup(sk_pin_group group, enum sk_mode mode);
