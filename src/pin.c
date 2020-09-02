@@ -30,15 +30,16 @@ void sk_pin_toggle(sk_pin pin)
  *   sparse = 0b1010101010101010
  *   result = 0b1 1     1010  1
  */
-uint16_t group_densify(uint16_t mask, uint16_t sparse)
+static uint16_t group_densify(uint16_t mask, uint16_t sparse)
 {
 	uint16_t res = 0;
 	int idx = 0;
-	for (int i = 0; i<16; i++)
+	for (int i = 0; i < 16; i++) {
 		if (mask & (1 << i)) {
 			res |= sparse & (1 << i) ? (1 << idx) : 0;
 			idx++;
 		}
+	}
 	return res;
 }
 
@@ -50,15 +51,16 @@ uint16_t group_densify(uint16_t mask, uint16_t sparse)
  *    dense = 0b1 1     1010  1
  *   result = 0b1010000010100010
  */
-uint16_t group_sparsify(uint16_t mask, uint16_t dense)
+static uint16_t group_sparsify(uint16_t mask, uint16_t dense)
 {
 	uint16_t res = 0;
 	int idx = 0;
-	for (int i = 0; i<16; i++)
+	for (int i = 0; i < 16; i++) {
 		if (mask & (1 << i)) {
 			res |= dense & (1 << idx) ? (1 << i) : 0;
 			idx++;
 		}
+	}
 	return res;
 }
 
@@ -94,11 +96,11 @@ void sk_pin_group_toggle(sk_pin_group group, uint16_t val)
 
 void sk_pin_mode_setup(sk_pin pin, enum sk_mode mode)
 {
-	gpio_mode_setup(sk_pin_port_to_gpio(pin.port), mode, 0x0, (1 << pin.pin));
+	gpio_mode_setup(sk_pin_port_to_gpio(pin.port), mode, GPIO_PUPD_NONE, (1 << pin.pin));
 }
 
 
 void sk_pin_group_mode_setup(sk_pin_group group, enum sk_mode mode)
 {
-	gpio_mode_setup(sk_pin_port_to_gpio(group.port), mode, 0x0, group.pins);
+	gpio_mode_setup(sk_pin_port_to_gpio(group.port), mode, GPIO_PUPD_NONE, group.pins);
 }
