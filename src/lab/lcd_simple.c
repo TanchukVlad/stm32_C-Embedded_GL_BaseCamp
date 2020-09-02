@@ -1,9 +1,11 @@
-#include <libopencm3/stm32/rcc.h>
 #include "lcd_hd44780.h"
 #include "tick.h"
-#include <stdint.h>
-#include <stddef.h>
+#include <libopencm3/stm32/rcc.h>
 #include <libopencm3/cm3/cortex.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+const sk_pin led_green = { .port=PORTD, .pin=12, .isinverse=false};
 
 sk_pin lcd_rs = { .port = PORTE, .pin = 7, .isinverse = false };
 sk_pin lcd_rw = { .port = PORTE, .pin = 10, .isinverse = false };
@@ -33,17 +35,31 @@ int main(void)
     rcc_periph_clock_enable(RCC_GPIOE);
     rcc_periph_clock_enable(RCC_GPIOD);
 
-    uint32_t period = 1000;
+
+    uint32_t period = 16000000ul / 10000ul;
     uint8_t priority = 2;
     sk_tick_init(period, priority);
     cm_enable_interrupts();
 
     sk_pin_group_mode_setup(lcd_group, MODE_OUTPUT);
+    sk_pin_mode_setup(led_green, MODE_OUTPUT);
+    sk_pin_mode_setup(lcd_rs, MODE_OUTPUT);
+    sk_pin_mode_setup(lcd_rw, MODE_OUTPUT);
+    sk_pin_mode_setup(lcd_en, MODE_OUTPUT);
+    sk_pin_mode_setup(lcd_bkl, MODE_OUTPUT);
     sk_pin_group_set(lcd_group, 0x00);
+    lcd_poweron_delay(&lcd);
+    sk_lcd_set_backlight(&lcd, true);
     lcd_init_4bit(&lcd);
+    sk_pin_set(led_green, true);
 
     while (1) {
-
-            sk_tick_delay_ms(500);
+            sk_pin_set(led_green, true);
+            lcd_write_data(&lcd, 'H');
+            lcd_write_data(&lcd, 'I');
+            sk_tick_delay_ms(1000);
+            lcd_clear_display(&lcd);
+            sk_pin_set(led_green, false);
+            sk_tick_delay_ms(1000);
     }
 }

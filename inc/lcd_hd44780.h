@@ -43,13 +43,17 @@ struct sk_lcd {
          */
         sk_delay_func_t delay_func_ms;
         /** True for 4-bit HD44780 interface, False for 8-bit. Only 4-bit IF is supported for now */
-        bool is4bitinterface : 1;
+        unsigned int is4bitinterface : 1;
 };
 
 //sk_err sk_lcd_set_backlight(struct sk_lcd *lcd, uint8_t level);
+void lcd_poweron_delay(struct sk_lcd *lcd);
 
 
-void display_on_off_control(struct sk_lcd *lcd);
+void sk_lcd_set_backlight(struct sk_lcd *lcd, bool mode);
+
+
+void lcd_display_on_off_control(struct sk_lcd *lcd, bool d, bool c, bool b);
 
 
 void lcd_clear_display(struct sk_lcd *lcd);
@@ -59,3 +63,6 @@ void lcd_init_4bit(struct sk_lcd *lcd);
 
 
 void lcd_write_data(struct sk_lcd *lcd, uint8_t byte);
+
+
+void lcd_entry_mode_set(struct sk_lcd *lcd, bool id, bool sh);

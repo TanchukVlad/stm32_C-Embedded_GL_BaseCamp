@@ -15,6 +15,8 @@ static const uint32_t DELAY_READWRITE_US = 43;
 // Read Busy Flag and Address command
 static const uint32_t DELAY_BUSYFLAG_US = 0;
 
+static const uint32_t DELAY_POWERON_US = 40000;
+
 
 /**
   * Private: Provides abstaction over two delay functions passed when constructing sk_lcd object
@@ -41,7 +43,7 @@ static void lcd_delay_us(struct sk_lcd *lcd, uint32_t us)
 
 	if (NULL == usfunc) {
 		// only ms-resolution func is set -> use rounded us delay
-		msfunc((us % 1000) ? ((1 + us) / 1000) : (us / 1000));
+		msfunc((us % 1000) ? (1 + us / 1000) : (us / 1000));
 		return;
 	}
 
@@ -53,24 +55,30 @@ static void lcd_delay_us(struct sk_lcd *lcd, uint32_t us)
 }
 
 
+void lcd_poweron_delay(struct sk_lcd *lcd)
+{
+	lcd_delay_us(lcd, DELAY_INIT0_US);
+}
+
+
 static void lcd_data_set_halfbyte(struct sk_lcd *lcd, uint8_t half)
 {
-        sk_pin_set(*lcd -> pin_en, true);
-        sk_pin_group_set(*lcd -> pin_group_data, half & 0x0F);
+        sk_pin_set(*lcd->pin_en, true);
+        sk_pin_group_set(*lcd->pin_group_data, half & 0x0F);
         lcd_delay_us(lcd, DELAY_ENA_STROBE_US);
-        sk_pin_set(*lcd -> pin_en, true);
+        sk_pin_set(*lcd->pin_en, true);
         lcd_delay_us(lcd, DELAY_ENA_STROBE_US);
 }
 
 
 static void lcd_data_set_byte(struct sk_lcd *lcd, uint8_t byte)
 {
-        if (lcd -> is4bitinterface) {
+        if (lcd->is4bitinterface) {
                 lcd_data_set_halfbyte(lcd, byte >> 4);
                 lcd_data_set_halfbyte(lcd, byte & 0x0F);
         } else {
-                sk_pin_set(*lcd -> pin_en, true);
-                sk_pin_group_set(*lcd -> pin_group_data, byte);
+                sk_pin_set(*lcd->pin_en, true);
+                sk_pin_group_set(*lcd->pin_group_data, byte);
                 lcd_delay_us(lcd, DELAY_ENA_STROBE_US);
         }
 }
@@ -90,16 +98,21 @@ static void lcd_send_byte(struct sk_lcd *lcd, bool rs, uint8_t byte)
 }
 
 
+void sk_lcd_set_backlight(struct sk_lcd *lcd, bool mode)
+{
+	sk_pin_set(*lcd->pin_bkl, mode);
+}
+
 /**
  * Set display on/off:
  * bit2 -- display on (D)
  * bit1 -- cursor on (C)
  * bit 0 -- blink on (B)
  */
-void display_on_off_control(struct sk_lcd *lcd)
+void lcd_display_on_off_control(struct sk_lcd *lcd, bool d, bool c, bool b)
 {
 	lcd_rsrw_set(lcd, 0, 0);
-	lcd_data_set_byte(lcd, 0b00001000 | 0b111);
+	lcd_data_set_byte(lcd, 0b00001000 | (d << 2) | (c << 1) | (b << 0));
 	lcd_delay_us(lcd, DELAY_CONTROL_US);
 }
 
@@ -110,7 +123,17 @@ void lcd_clear_display(struct sk_lcd *lcd)
 	lcd_data_set_byte(lcd, 0b00000001);
 	lcd_delay_us(lcd, DELAY_CLRRET_US);
 }
-
+/**
+ * Entry mode set:
+ * bit1 -- decrement/increment cnt (I/D),
+ * bit0 -- display noshift / shift (SH)
+ */
+void lcd_entry_mode_set(struct sk_lcd *lcd, bool id, bool sh)
+{
+	lcd_rsrw_set(lcd, 0, 0);
+	lcd_data_set_byte(lcd, 0b00000100 | (id << 1) | (sh << 0));
+	lcd_delay_us(lcd, DELAY_CONTROL_US);
+}
 
 /**
  * Initial function for HD44780.
@@ -130,17 +153,14 @@ void lcd_init_4bit(struct sk_lcd *lcd)
 	lcd_delay_us(lcd, DELAY_CONTROL_US);
 
         // Set display on/off
-        display_on_off_control(lcd);
+        lcd_display_on_off_control(lcd, 1, 0, 0);
 
-	// clear display
+	// Clear display
 	lcd_clear_display(lcd);
 
-	// entry mode set:
-        // bit1 -- decrement/increment cnt (I/D),
-        // bit0 -- display noshift / shift (SH)
-	lcd_rsrw_set(lcd, 0, 0);
-	lcd_data_set_byte(lcd, 0b00000100 | 0b10);
-	lcd_delay_us(lcd, DELAY_CLRRET_US);
+	// Entry mode set
+	lcd_entry_mode_set(lcd, 1, 0);
+
 }
 
 
@@ -148,5 +168,5 @@ void lcd_write_data(struct sk_lcd *lcd, uint8_t byte)
 {
 	lcd_rsrw_set(lcd, 1, 0);
 	lcd_data_set_byte(lcd, byte);
-	lcd_delay_us(lcd, DELAY_CONTROL_US);
+	lcd_delay_us(lcd, DELAY_READWRITE_US);
 }
