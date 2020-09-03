@@ -66,20 +66,21 @@ static void lcd_data_set_halfbyte(struct sk_lcd *lcd, uint8_t half)
         sk_pin_set(*lcd->pin_en, true);
         sk_pin_group_set(*lcd->pin_group_data, half & 0x0F);
         lcd_delay_us(lcd, DELAY_ENA_STROBE_US);
-        sk_pin_set(*lcd->pin_en, true);
+        sk_pin_set(*lcd->pin_en, false);
         lcd_delay_us(lcd, DELAY_ENA_STROBE_US);
 }
 
 
 static void lcd_data_set_byte(struct sk_lcd *lcd, uint8_t byte)
 {
-        if (lcd->is4bitinterface) {
+        if (lcd -> is4bitinterface) {
                 lcd_data_set_halfbyte(lcd, byte >> 4);
                 lcd_data_set_halfbyte(lcd, byte & 0x0F);
         } else {
                 sk_pin_set(*lcd->pin_en, true);
                 sk_pin_group_set(*lcd->pin_group_data, byte);
                 lcd_delay_us(lcd, DELAY_ENA_STROBE_US);
+		sk_pin_set(*lcd->pin_en, false);
         }
 }
 
@@ -113,7 +114,6 @@ void lcd_display_on_off_control(struct sk_lcd *lcd, bool d, bool c, bool b)
 {
 	lcd_rsrw_set(lcd, 0, 0);
 	lcd_data_set_byte(lcd, 0b00001000 | (d << 2) | (c << 1) | (b << 0));
-	lcd_delay_us(lcd, DELAY_CONTROL_US);
 }
 
 
@@ -123,6 +123,8 @@ void lcd_clear_display(struct sk_lcd *lcd)
 	lcd_data_set_byte(lcd, 0b00000001);
 	lcd_delay_us(lcd, DELAY_CLRRET_US);
 }
+
+
 /**
  * Entry mode set:
  * bit1 -- decrement/increment cnt (I/D),
@@ -134,6 +136,8 @@ void lcd_entry_mode_set(struct sk_lcd *lcd, bool id, bool sh)
 	lcd_data_set_byte(lcd, 0b00000100 | (id << 1) | (sh << 0));
 	lcd_delay_us(lcd, DELAY_CONTROL_US);
 }
+
+
 
 /**
  * Initial function for HD44780.
@@ -153,14 +157,13 @@ void lcd_init_4bit(struct sk_lcd *lcd)
 	lcd_delay_us(lcd, DELAY_CONTROL_US);
 
         // Set display on/off
-        lcd_display_on_off_control(lcd, 1, 0, 0);
+        lcd_display_on_off_control(lcd, true, false, false);
 
 	// Clear display
 	lcd_clear_display(lcd);
 
 	// Entry mode set
-	lcd_entry_mode_set(lcd, 1, 0);
-
+	lcd_entry_mode_set(lcd, true, false);
 }
 
 
@@ -169,4 +172,15 @@ void lcd_write_data(struct sk_lcd *lcd, uint8_t byte)
 	lcd_rsrw_set(lcd, 1, 0);
 	lcd_data_set_byte(lcd, byte);
 	lcd_delay_us(lcd, DELAY_READWRITE_US);
+}
+
+void lcd_print_text(struct sk_lcd *lcd, char *text)
+{
+	sk_pin_group_set(*lcd->pin_group_data , 0x00);
+
+	const char *ptr = text;
+	while( *ptr != '\0') {
+		lcd_write_data(lcd, *ptr);
+		ptr++;
+	}
 }

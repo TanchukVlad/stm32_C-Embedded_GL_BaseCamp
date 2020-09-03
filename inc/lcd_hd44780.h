@@ -5,8 +5,10 @@
  */
 
 #include "pin.h"
+#include "tick.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 /** Pointer to delay(uint32_t var) function defined as type */
 typedef void (*sk_delay_func_t)(uint32_t);
@@ -66,3 +68,6 @@ void lcd_write_data(struct sk_lcd *lcd, uint8_t byte);
 
 
 void lcd_entry_mode_set(struct sk_lcd *lcd, bool id, bool sh);
+
+
+void lcd_print_text(struct sk_lcd *lcd, char *text);
