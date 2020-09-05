@@ -5,7 +5,6 @@
  */
 
 #include "pin.h"
-#include "tick.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -71,3 +70,6 @@ void lcd_entry_mode_set(struct sk_lcd *lcd, bool id, bool sh);
 
 
 void lcd_print_text(struct sk_lcd *lcd, char *text);
+
+
+void sk_lcd_set_addr(struct sk_lcd *lcd, uint8_t byte);

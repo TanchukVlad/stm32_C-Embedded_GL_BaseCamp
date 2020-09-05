@@ -1,4 +1,5 @@
 #include "lcd_hd44780.h"
+#include "tick.h"
 
 
 const sk_pin led_green = { .port=PORTD, .pin=12, .isinverse=false};

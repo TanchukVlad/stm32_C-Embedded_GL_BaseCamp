@@ -125,6 +125,14 @@ void lcd_clear_display(struct sk_lcd *lcd)
 }
 
 
+void sk_lcd_set_addr(struct sk_lcd *lcd, uint8_t byte)
+{
+	lcd_rsrw_set(lcd, 0, 0);
+	lcd_data_set_byte(lcd, 0b10000000 | byte);
+	lcd_delay_us(lcd, DELAY_CONTROL_US);
+}
+
+
 /**
  * Entry mode set:
  * bit1 -- decrement/increment cnt (I/D),

@@ -14,6 +14,12 @@
 extern volatile uint32_t __sk_nticks;
 
 
+inline sk_attr_alwaysinline void __WFI(void)
+{
+        __asm__ volatile ("WFI");
+}
+
+
 /**
  * Return SysTick counter value.
  */

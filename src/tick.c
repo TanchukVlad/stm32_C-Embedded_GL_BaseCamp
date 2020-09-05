@@ -1,10 +1,5 @@
 #include "tick.h"
 
-inline sk_attr_alwaysinline void __WFI(void)
-{
-        __asm__ volatile ("WFI");
-}
-
 
 volatile uint32_t __sk_nticks;
 
