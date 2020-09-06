@@ -41,7 +41,7 @@ static void adc_temp_init(void)
 {
         rcc_periph_clock_enable(RCC_GPIOB);
         //minimize noise
-        gpio_set_output_options(temp_pin.port, GPIO_OTYPE_PP, GPIO_OSPEED_2MHZ, temp_pin.pin);
+        gpio_set_output_options(GPIOB, GPIO_OTYPE_PP, GPIO_OSPEED_2MHZ, temp_pin.pin);
         //gpio_mode_setup(GPIOB, GPIO_MODE_ANALOG, GPIO_PUPD_NONE, 1 << 1);
         sk_pin_mode_setup(temp_pin, MODE_ANALOG);
         // APB2 prescaler /2
