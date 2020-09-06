@@ -1,5 +1,5 @@
 # The main (project top) file without .c
-TARGET = timerbasics
+TARGET = adcbasics
 # All source files go here:
 SRCS = $(TARGET).c
 # other sources added like that
@@ -29,6 +29,9 @@ EXTRAFLAGS ?= $(OPTFLAGS) -std=gnu17 \
 			  -Wall -Wextra -Wpedantic \
 			  -Wimplicit-function-declaration -Wredundant-decls \
               -Wstrict-prototypes -Wundef -Wshadow
+
+# Required by LCD lib to map charsets (UTF8 to CP1251)
+EXTRAFLAGS += -finput-charset=UTF-8 -fexec-charset=cp1251
 # Device is required for libopencm3
 DEVICE ?= stm32f407vgt6
 # Possible values: soft, hard
