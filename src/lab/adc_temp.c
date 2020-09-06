@@ -11,9 +11,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-
-const sk_pin temp_pin = { .port=PORTB, .pin=9, .isinverse=false};
-
 sk_pin lcd_rs = { .port = PORTE, .pin = 7, .isinverse = false };
 sk_pin lcd_rw = { .port = PORTE, .pin = 10, .isinverse = false };
 sk_pin lcd_en = { .port = PORTE, .pin = 11, .isinverse = false };
@@ -37,12 +34,15 @@ struct sk_lcd lcd = {
         .is4bitinterface = 1
 };
 
+const sk_pin temp_pin = { .port=PORTB, .pin=1, .isinverse=false};
+
+
 static void adc_temp_init(void)
 {
         rcc_periph_clock_enable(RCC_GPIOB);
         //minimize noise
-        gpio_set_output_options(GPIOB, GPIO_OTYPE_PP, GPIO_OSPEED_2MHZ, 1 << 1);
-
+        gpio_set_output_options(temp_pin.port, GPIO_OTYPE_PP, GPIO_OSPEED_2MHZ, temp_pin.pin);
+        //gpio_mode_setup(GPIOB, GPIO_MODE_ANALOG, GPIO_PUPD_NONE, 1 << 1);
         sk_pin_mode_setup(temp_pin, MODE_ANALOG);
         // APB2 prescaler /2
         rcc_set_ppre2(RCC_CFGR_PPRE_DIV_2);
@@ -56,18 +56,16 @@ static void adc_temp_init(void)
         // Set left-to-right data alignment in adc result register
         adc_set_right_aligned(ADC1);
 
-        // Set ADC regular sequence register.
-        uint8_t num_of_channels = 16;
-        uint8_t channels[num_of_channels];
-        for (int i = 0; i < num_of_channels; i++)
-        {
+        // Set ADC regular sequence register;
+        uint8_t channels[16];
+        for (uint8_t i = 0; i < sk_arr_len(channels); i++) {
                 // Set sampling time:
                 // Set ADC sample time register: 480 cycles.
                 // Fs = fadc / 480 = 1 MHz / 480 = 2083.33 Hz.
                 adc_set_sample_time(ADC1, i, ADC_SMPR_SMP_480CYC);
                 channels[i] = 9;
         }
-        adc_set_regular_sequence(ADC1, num_of_channels, channels);
+        adc_set_regular_sequence(ADC1, sk_arr_len(channels), channels);
         // The EOC is set after each conversion in a sequence rather than at the end of the sequence.
         adc_eoc_after_each(ADC1);
 
@@ -94,6 +92,7 @@ void adc_isr(void)
         static volatile uint32_t sum = 0;
         static volatile uint32_t cnt = 0;
 
+
         if (adc_get_overrun_flag(ADC1)) {
                 sum = cnt = 0;
                 adc_clear_flag(ADC1, ADC_SR_OVR);
@@ -108,6 +107,7 @@ void adc_isr(void)
                 adc_clear_flag(ADC1, ADC_SR_STRT);
         }
         adc_clear_flag(ADC1, ADC_SR_EOC);
+
 }
 
 
