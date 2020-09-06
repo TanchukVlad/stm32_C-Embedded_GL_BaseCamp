@@ -187,7 +187,11 @@ void lcd_print_text(struct sk_lcd *lcd, char *text)
 	sk_pin_group_set(*lcd->pin_group_data , 0x00);
 
 	const char *ptr = text;
-	while( *ptr != '\0') {
+	while (*ptr != '\0') {
+		if (*ptr == '\n') {
+			sk_lcd_set_addr(lcd, 0x40);
+			ptr++;
+		}
 		lcd_write_data(lcd, *ptr);
 		ptr++;
 	}
