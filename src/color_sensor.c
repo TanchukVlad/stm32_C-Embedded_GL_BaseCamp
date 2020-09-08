@@ -20,13 +20,14 @@
 #include <libopencm3/cm3/cortex.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/timer.h>
+sk_pin green = { .port = PORTD, .pin = 12, .isinverse = false};
 
 sk_pin lcd_rs = { .port = PORTE, .pin = 7, .isinverse = false };
 sk_pin lcd_rw = { .port = PORTE, .pin = 10, .isinverse = false };
 sk_pin lcd_en = { .port = PORTE, .pin = 11, .isinverse = false };
 sk_pin lcd_bkl = { .port = PORTE, .pin = 9, .isinverse = false };
 
-sk_pin cs_out = { .port = PORTE, .pin = 6, .isinverse = false };
+sk_pin cs_out = { .port = PORTD, .pin = 7, .isinverse = false };
 
 sk_pin_group lcd_group = {
         .port = PORTE,
@@ -35,8 +36,8 @@ sk_pin_group lcd_group = {
 };
 
 sk_pin_group cs_s_group = {
-        .port = PORTE,
-        .pins = (1 << 5) | (1 << 4) | (1 << 3) | (1 << 2),
+        .port = PORTD,
+        .pins = (1 << 6) | (1 << 5) | (1 << 4) | (1 << 3),
         .inversions = false
 };
 
@@ -63,19 +64,20 @@ uint32_t read_freq(sk_pin pin, uint32_t ms)
 
         if (sk_tick_get_current() > next) {
                 while (sk_tick_get_current() > next) {
-                        if(sk_pin_read(pin)) {
-                                freq_cnt++;
-                        } else {
-                                __WFI();
-                        }
+                        // wait cs_out = 1
+                        while (!sk_pin_read(pin));
+                        // wait cs_out = 0
+                        while (sk_pin_read(pin));
+                        //after cs_out 1 and 0 (it is one impulse) increment freq_cnt
+                        freq_cnt++;
                 }
         } else {
                 while (sk_tick_get_current() <= next) {
-                        if(sk_pin_read(pin)) {
-                                freq_cnt++;
-                        } else {
-                                __WFI();
-                        }
+                        while (!sk_pin_read(pin));
+
+                        while (sk_pin_read(pin));
+
+                        freq_cnt++;
                 }
         }
 
@@ -83,15 +85,45 @@ uint32_t read_freq(sk_pin pin, uint32_t ms)
 }
 
 
+uint8_t color_scale(uint32_t freq, char color)
+{
+        uint8_t scale;
+
+        switch (color) {
+                case 'R':
+                        scale = 25;
+                        break;
+                case 'G':
+                        scale = 33;
+                        break;
+                case 'B':
+                        scale = 26;
+                        break;
+                default:
+                        scale = 25;
+                        break;
+        }
+
+        return ((freq * scale) / 10 > 255) ? 255 : (freq * scale) / 10;
+
+}
+
+
 int main (void)
 {
         rcc_periph_clock_enable(RCC_GPIOE);
+        rcc_periph_clock_enable(RCC_GPIOD);
+
         sk_pin_group_mode_setup(lcd_group, MODE_OUTPUT);
         sk_pin_group_mode_setup(cs_s_group, MODE_OUTPUT);
         sk_pin_mode_setup(lcd_rs, MODE_OUTPUT);
         sk_pin_mode_setup(lcd_rw, MODE_OUTPUT);
         sk_pin_mode_setup(lcd_en, MODE_OUTPUT);
         sk_pin_mode_setup(lcd_bkl, MODE_OUTPUT);
+
+        sk_pin_mode_setup(green, MODE_OUTPUT);
+
+        sk_pin_set(green, false);
 
         sk_pin_mode_setup(cs_out, MODE_INPUT);
 
@@ -105,31 +137,33 @@ int main (void)
         lcd_init_4bit(&lcd);
         sk_lcd_set_backlight(&lcd, true);
 
+        sk_pin_set(green, true);
+
+        uint8_t red_freq = 0;
+        uint8_t blue_freq = 0;
+        uint8_t green_freq = 0;
+
         while(1)
         {
-                uint32_t red_freq = 0;
-                uint32_t blue_freq = 0;
-                uint32_t green_freq = 0;
                 //red
-                sk_pin_group_set(cs_s_group, 0b0001);
-                red_freq = read_freq(cs_out, 100);
-                //blue
-                sk_pin_group_set(cs_s_group, 0b1001);
-                blue_freq = read_freq(cs_out, 100);
+                sk_pin_group_set(cs_s_group, 0b0011);
+                red_freq = color_scale(read_freq(cs_out, 10), 'R');
                 //green
-                sk_pin_group_set(cs_s_group, 0b1101);
-                green_freq = read_freq(cs_out, 100);
+                sk_pin_group_set(cs_s_group, 0b1111);
+                green_freq = color_scale(read_freq(cs_out, 10), 'G');
+                //blue
+                sk_pin_group_set(cs_s_group, 0b1011);
+                blue_freq = color_scale(read_freq(cs_out, 10), 'B');
                 //clear
-                sk_pin_group_set(cs_s_group, 0b0101);
-                sk_tick_delay_ms(100);
+                sk_pin_group_set(cs_s_group, 0b0111);
+                sk_tick_delay_ms(10);
 
-                char red[5], blue[5], green[5], buffer[25];
-		snprintf(red, sk_arr_len(red), "%d", red_freq);
-                snprintf(blue, sk_arr_len(red), "%d", blue_freq);
-                snprintf(green, sk_arr_len(red), "%d", green_freq);
-		snprintf(buffer, sk_arr_len(buffer), "R=%s G=%s\nB=%s", red, green, blue);
+                char buffer[25];
+                snprintf(buffer, sk_arr_len(buffer), "R=%u G=%u\nB=%u",
+                        (unsigned int)red_freq, (unsigned int)green_freq, (unsigned int)blue_freq);
+                lcd_clear_display(&lcd);
                 sk_lcd_set_addr(&lcd, 0x00);
                 lcd_print_text(&lcd, buffer);
-
+                sk_tick_delay_ms(500);
         }
 }

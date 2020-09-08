@@ -59,7 +59,7 @@ CFLAGS += -fdata-sections -ffunction-sections
 CFLAGS += -DUSE_SEMIHOSTING=$(SEMIHOSTING)
 CFLAGS += $(addprefix -D,$(DEFINES)) $(genlink_cppflags) $(EXTRAFLAGS)
 
-LDFLAGS := $(ARCHFLAGS) --static -nostartfiles 
+LDFLAGS := $(ARCHFLAGS) --static -nostartfiles
 
 ifeq ("$(SEMIHOSTING)","1")
 LDFLAGS += --specs=rdimon.specs -lrdimon
@@ -140,7 +140,7 @@ include $(OPENCM3_DIR)/mk/genlink-rules.mk
 
 ## Recipe for building project object files, placed in separate directory
 $(OBJDIR)/%.o: $(SRC_DIR)/%.c | $(OBJDIR) $(BUILD_DIR)/$(PROFILE)/libopencm3.a
-	$(CC) $(CFLAGS) $(INCS) -c $< -o $@ 
+	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
 
 ## Recipe for elf file, that is used for flashing and debugging, can be converted to bin/hex form
 $(BUILD_DIR)/$(PROFILE)/$(TARGET).elf: $(addprefix $(OBJDIR)/,$(OBJECTS)) | \
