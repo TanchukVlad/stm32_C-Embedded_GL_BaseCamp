@@ -60,23 +60,48 @@ uint32_t read_freq(sk_pin pin, uint32_t ms)
 
         if (sk_tick_get_current() > next) {
                 while (sk_tick_get_current() > next) {
-                        if(sk_pin_read(pin)) {
-                                freq_cnt++;
-                        } else {
-                                __WFI();
-                        }
+                        // wait cs_out = 1
+                        while (!sk_pin_read(pin));
+                        // wait cs_out = 0
+                        while (sk_pin_read(pin));
+                        //after cs_out 1 and 0 (it is one impulse) increment freq_cnt
+                        freq_cnt++;
                 }
         } else {
                 while (sk_tick_get_current() <= next) {
-                        if(sk_pin_read(pin)) {
-                                freq_cnt++;
-                        } else {
-                                __WFI();
-                        }
+                        while (!sk_pin_read(pin));
+
+                        while (sk_pin_read(pin));
+
+                        freq_cnt++;
                 }
         }
 
         return freq_cnt / ms;
+}
+
+
+uint8_t color_scale(uint32_t freq, char color)
+{
+        uint8_t scale;
+
+        switch (color) {
+                case 'R':
+                        scale = 26;
+                        break;
+                case 'G':
+                        scale = 35;
+                        break;
+                case 'B':
+                        scale = 26;
+                        break;
+                default:
+                        scale = 25;
+                        break;
+        }
+
+        return ((freq * scale) / 10 > 255) ? 255 : (freq * scale) / 10;
+
 }
 
 
@@ -107,21 +132,21 @@ int main(void)
 
 	printf("System initialized\n");
         while (1) {
-		uint32_t red_freq = 0;
-                uint32_t blue_freq = 0;
-                uint32_t green_freq = 0;
+		uint8_t red_freq = 0;
+                uint8_t blue_freq = 0;
+                uint8_t green_freq = 0;
                 //red
                 sk_pin_group_set(cs_s_group, 0b0011);
-                red_freq = read_freq(cs_out, 250);
-		printf("R = %ld\t", red_freq);
+                red_freq = color_scale(read_freq(cs_out, 10), 'R');
+		printf("R = %d\t", red_freq);
 		//green
 		sk_pin_group_set(cs_s_group, 0b1111);
-		green_freq = read_freq(cs_out, 250);
-		printf("G = %ld\t", green_freq);
+		green_freq = color_scale(read_freq(cs_out, 10), 'G');
+		printf("G = %d\t", green_freq);
                 //blue
                 sk_pin_group_set(cs_s_group, 0b1011);
-                blue_freq = read_freq(cs_out, 250);
-		printf("B = %ld\n", blue_freq);
+                blue_freq = color_scale(read_freq(cs_out, 10), 'B');
+		printf("B = %d\n", blue_freq);
                 //clear
                 sk_pin_group_set(cs_s_group, 0b0111);
                 sk_tick_delay_ms(10);
