@@ -1,19 +1,16 @@
 #include "pin.h"
-#include "tick.h"
+#include "clock_168mhz.h"
 #include <libopencm3/cm3/sync.h>
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/cm3/cortex.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/timer.h>
 
-#define TIM_CLOCK_FREQ_HZ       1000000       /* 1   MHz */
-#define TIM_DEFAULT_PWM_FREQ_HZ 100           /* 100 Hz */
-#define PWM_MAX_FREQ_HZ		100000        /* 100kHz */
+#define PWM_CH1 1
+#define PWM_CH2 2
+#define PWM_CH3 3
+#define PWM_CH4 4
 
-#define PWM_CH1	0
-#define PWM_CH2	1
-#define PWM_CH3	2
-#define PWM_CH4	3
 
 const sk_pin led_green  = { .port=PORTD, .pin=12, .isinverse=false };
 const sk_pin led_orange = { .port=PORTD, .pin=13, .isinverse=false };
@@ -29,13 +26,12 @@ void pwm_init(void)
         rcc_periph_clock_enable(RCC_TIM4);
         // The alignment and count direction.
         timer_set_mode(TIM4, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
-        timer_set_prescaler(TIM4, ((rcc_apb1_frequency * 2) / TIM_CLOCK_FREQ_HZ));
+        uint32_t tim_presс = (rcc_apb1_frequency * 2 / 1000000) - 1;
+        timer_set_prescaler(TIM4, tim_presс);
         timer_enable_preload(TIM4);
         timer_continuous_mode(TIM4);
         // A timer update event is generated only after the specified number of repeat count cycles have been completed.
         timer_set_repetition_counter(TIM4, 0);
-        current_timer_cnt_period = ((TIM_CLOCK_FREQ_HZ / TIM_DEFAULT_PWM_FREQ_HZ) - 1);
-        timer_set_period(TIM4, current_timer_cnt_period);
 }
 
 void led_init(void)
@@ -72,87 +68,75 @@ void led_init(void)
         timer_set_oc_value(TIM4, TIM_OC4, 0);
         // Enable OC output
         timer_enable_oc_output(TIM4, TIM_OC1);
-        timer_enable_oc_output(TIM4, TIM_OC1);
-        timer_enable_oc_output(TIM4, TIM_OC1);
-        timer_enable_oc_output(TIM4, TIM_OC1);
+        timer_enable_oc_output(TIM4, TIM_OC2);
+        timer_enable_oc_output(TIM4, TIM_OC3);
+        timer_enable_oc_output(TIM4, TIM_OC4);
 }
 
 
 void pwm_set_freq(uint32_t pwm_freq)
 {
-        if (pwm_freq <= PWM_MAX_FREQ_HZ) {
-                current_timer_cnt_period = ((TIM_CLOCK_FREQ_HZ / pwm_freq) - 1);
-                timer_set_period(TIM4, current_timer_cnt_period);
-        }
+        current_timer_cnt_period = (rcc_apb1_frequency * 2 / (TIM4_PSC * pwm_freq));
+        timer_set_period(TIM4, current_timer_cnt_period);
+
+        timer_generate_event(TIM4, TIM_EGR_UG);
+        timer_enable_counter(TIM4);
 }
 
 
 /* set DC value for a channel */
 void pwm_set_dc(uint8_t ch_index, uint16_t dc_value_permillage)
 {
-        uint32_t dc_tmr_reg_value;
 
-	if (dc_value_permillage <= 1000) {
-		// Calculate DC timer register value
-		dc_tmr_reg_value = (uint32_t)(((uint64_t)current_timer_cnt_period * dc_value_permillage) / 1000);
-		// Update the required channel
-                switch (ch_index) {
-                        case 0:
-                                timer_set_oc_value(TIM4, TIM_OC1, dc_value_permillage);
-        			break;
-                        case 1:
-                                timer_set_oc_value(TIM4, TIM_OC2, dc_value_permillage);
-                                break;
-                        case 2:
-                                timer_set_oc_value(TIM4, TIM_OC3, dc_value_permillage);
-                                break;
-                        case 3:
-                                timer_set_oc_value(TIM4, TIM_OC4, dc_value_permillage);
-                                break;
-                        default:
-                                return;
-                }
+        switch (ch_index) {
+                case 1:
+                        timer_set_oc_value(TIM4, TIM_OC1, dc_value_permillage);
+        		break;
+                case 2:
+                        timer_set_oc_value(TIM4, TIM_OC2, dc_value_permillage);
+                        break;
+                case 3:
+                        timer_set_oc_value(TIM4, TIM_OC3, dc_value_permillage);
+                        break;
+                case 4:
+                        timer_set_oc_value(TIM4, TIM_OC4, dc_value_permillage);
+                        break;
+                default:
+                        return;
         }
-}
-
-
-void pwm_start(void)
-{
-	timer_generate_event(TIM4, TIM_EGR_UG);
-	timer_enable_counter(TIM4);
 }
 
 
 int main(void)
 {
-
+        clock_init();
         pwm_init();
         led_init();
 
-        pwm_set_freq(1000);
 
-        pwm_set_dc(PWM_CH1, 0);
-        pwm_set_dc(PWM_CH2, 0);
-        pwm_set_dc(PWM_CH3, 0);
-        pwm_set_dc(PWM_CH4, 0);
-
-        uint32_t period = 16000000ul / 10000ul;
+        uint32_t period = 168000000ul / 10000ul;
         uint8_t priority = 2;
         sk_tick_init(period, priority);
         cm_enable_interrupts();
 
-        pwm_start();
+        pwm_set_freq(2000);   // 2000Hz
 
-        uint16_t pwm_dc_value = 0;
+        int i = 0;
 
         while (1) {
-                pwm_dc_value++;
-        	if (pwm_dc_value > 2000) {
-        		pwm_dc_value = 0;
-        	}
-                pwm_set_dc(PWM_CH1, pwm_dc_value);
-                pwm_set_dc(PWM_CH2, pwm_dc_value);
-                pwm_set_dc(PWM_CH3, pwm_dc_value);
-                pwm_set_dc(PWM_CH4, pwm_dc_value);
+                for (i; i < current_timer_cnt_period; i++) {
+                        pwm_set_dc(PWM_CH1, i);
+                        pwm_set_dc(PWM_CH2, i);
+                        pwm_set_dc(PWM_CH3, i);
+                        pwm_set_dc(PWM_CH4, i);
+                        sk_tick_delay_ms(5);
+                }
+                for (i; i > 0; i--) {
+                        pwm_set_dc(PWM_CH1, i);
+                        pwm_set_dc(PWM_CH2, i);
+                        pwm_set_dc(PWM_CH3, i);
+                        pwm_set_dc(PWM_CH4, i);
+                        sk_tick_delay_ms(5);
+                }
         }
 }
