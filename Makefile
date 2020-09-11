@@ -3,7 +3,7 @@ TARGET = adcbasics
 # All source files go here:
 SRCS = $(TARGET).c
 # other sources added like that
-SRCS += pin.c tick.c lcd_hd44780.c printf.c clock_168mhz.c
+SRCS += pin.c tick.c lcd_hd44780.c printf.c clock_168mhz.c servo.c
 # User defines
 DEFINES = GLSK_BOARD=1
 # The libs which are linked to the resulting target
