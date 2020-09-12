@@ -11,50 +11,10 @@
  * OUT transmit output frequency, so this frequency is read by read_freq().
  * read_freq() was based on TIMx.
  */
-
-#include "lcd_hd44780.h"
-#include "printf.h"
-#include "tick.h"
-#include <libopencm3/cm3/sync.h>
-#include <libopencm3/cm3/nvic.h>
-#include <libopencm3/cm3/cortex.h>
-#include <libopencm3/stm32/rcc.h>
-#include <libopencm3/stm32/timer.h>
-sk_pin green = { .port = PORTD, .pin = 12, .isinverse = false};
-
-sk_pin lcd_rs = { .port = PORTE, .pin = 7, .isinverse = false };
-sk_pin lcd_rw = { .port = PORTE, .pin = 10, .isinverse = false };
-sk_pin lcd_en = { .port = PORTE, .pin = 11, .isinverse = false };
-sk_pin lcd_bkl = { .port = PORTE, .pin = 9, .isinverse = false };
-
-sk_pin cs_out = { .port = PORTD, .pin = 7, .isinverse = false };
-
-sk_pin_group lcd_group = {
-        .port = PORTE,
-        .pins = (1 << 15) | (1 << 14) | (1 << 13) | (1 << 12),
-        .inversions = false
-};
-
-sk_pin_group cs_s_group = {
-        .port = PORTD,
-        .pins = (1 << 6) | (1 << 5) | (1 << 4) | (1 << 3),
-        .inversions = false
-};
-
-struct sk_lcd lcd = {
-        .pin_group_data = &lcd_group,
-        .pin_rs = &lcd_rs,
-        .pin_rw = &lcd_rw,
-        .pin_en = &lcd_en,
-        .pin_bkl = &lcd_bkl,
-        //.set_backlight_func = &test_bkl_func,
-        .delay_func_us = NULL,
-        .delay_func_ms = &sk_tick_delay_ms,
-        .is4bitinterface = 1
-};
+#include "color_sensor.h"
 
 
-uint32_t read_freq(sk_pin pin, uint32_t ms)
+uint32_t color_read_freq(sk_pin pin, uint32_t ms)
 {
         uint32_t cur = sk_tick_get_current();
         uint32_t delta = (sk_tick_get_rate_hz() / 1000) * ms;
@@ -91,79 +51,55 @@ uint8_t color_scale(uint32_t freq, char color)
 
         switch (color) {
                 case 'R':
-                        scale = 25;
+                        scale = 17;
                         break;
                 case 'G':
-                        scale = 33;
+                        scale = 23;
                         break;
                 case 'B':
-                        scale = 26;
+                        scale = 17;
                         break;
                 default:
-                        scale = 25;
+                        scale = 10;
                         break;
         }
 
         return ((freq * scale) / 10 > 255) ? 255 : (freq * scale) / 10;
-
 }
 
 
-int main (void)
+void color_get_rgb(sk_pin_group group, sk_pin pin, uint32_t ms, uint8_t *rgb_arr)
 {
-        rcc_periph_clock_enable(RCC_GPIOE);
-        rcc_periph_clock_enable(RCC_GPIOD);
+        //red
+        sk_pin_group_set(group, 0b0011);
+        rgb_arr[0] = color_scale(color_read_freq(pin, ms), 'R');
+        //green
+        sk_pin_group_set(group, 0b1111);
+        rgb_arr[1] = color_scale(color_read_freq(pin, ms), 'G');
+        //blue
+        sk_pin_group_set(group, 0b1011);
+        rgb_arr[2] = color_scale(color_read_freq(pin, ms), 'B');
+        //clear
+        sk_pin_group_set(group, 0b0111);
+        sk_tick_delay_ms(10);
+}
 
-        sk_pin_group_mode_setup(lcd_group, MODE_OUTPUT);
-        sk_pin_group_mode_setup(cs_s_group, MODE_OUTPUT);
-        sk_pin_mode_setup(lcd_rs, MODE_OUTPUT);
-        sk_pin_mode_setup(lcd_rw, MODE_OUTPUT);
-        sk_pin_mode_setup(lcd_en, MODE_OUTPUT);
-        sk_pin_mode_setup(lcd_bkl, MODE_OUTPUT);
 
-        sk_pin_mode_setup(green, MODE_OUTPUT);
-
-        sk_pin_set(green, false);
-
-        sk_pin_mode_setup(cs_out, MODE_INPUT);
-
-        uint32_t period = 16000000ul / 10000ul;
-        uint8_t priority = 2;
-        sk_tick_init(period, priority);
-        cm_enable_interrupts();
-
-        sk_pin_group_set(lcd_group, 0x00);
-        lcd_poweron_delay(&lcd);
-        lcd_init_4bit(&lcd);
-        sk_lcd_set_backlight(&lcd, true);
-
-        sk_pin_set(green, true);
-
-        uint8_t red_freq = 0;
-        uint8_t blue_freq = 0;
-        uint8_t green_freq = 0;
-
-        while(1)
-        {
-                //red
-                sk_pin_group_set(cs_s_group, 0b0011);
-                red_freq = color_scale(read_freq(cs_out, 10), 'R');
-                //green
-                sk_pin_group_set(cs_s_group, 0b1111);
-                green_freq = color_scale(read_freq(cs_out, 10), 'G');
-                //blue
-                sk_pin_group_set(cs_s_group, 0b1011);
-                blue_freq = color_scale(read_freq(cs_out, 10), 'B');
-                //clear
-                sk_pin_group_set(cs_s_group, 0b0111);
-                sk_tick_delay_ms(10);
-
-                char buffer[25];
-                snprintf(buffer, sk_arr_len(buffer), "R=%u G=%u\nB=%u",
-                        (unsigned int)red_freq, (unsigned int)green_freq, (unsigned int)blue_freq);
-                lcd_clear_display(&lcd);
-                sk_lcd_set_addr(&lcd, 0x00);
-                lcd_print_text(&lcd, buffer);
-                sk_tick_delay_ms(500);
+char color_name(uint8_t *rgb_arr)
+{
+        if ((149 < rgb_arr[0] && rgb_arr[0] < 256) && (59 < rgb_arr[1] && rgb_arr[1] < 76) && (44 < rgb_arr[2] && rgb_arr[2] < 76)) {
+                return 'R';  // Red
+        } else if ((69 < rgb_arr[0] && rgb_arr[0] < 101) && (80 < rgb_arr[1] && rgb_arr[1] < 256) && (60 < rgb_arr[2] && rgb_arr[2] < 95)) {
+                return 'G';  // Green
+        } else if ((40 < rgb_arr[0] && rgb_arr[0] < 80) && (70 < rgb_arr[1] && rgb_arr[1] < 170) && (100 < rgb_arr[2] && rgb_arr[2] < 256)) {
+                return 'B';  // Blue
+        } else if ((180 < rgb_arr[0] && rgb_arr[0] < 220) && (90 < rgb_arr[1] && rgb_arr[1] < 105) && (75 < rgb_arr[2] && rgb_arr[2] < 90)) {
+                return 'O';  // Orange
+        } else if ((200 < rgb_arr[0] && rgb_arr[0] < 256) && (175 < rgb_arr[1] && rgb_arr[1] < 256) && (65 < rgb_arr[2] && rgb_arr[2] < 125)) {
+                return 'Y';  // Yellow
+        } else if ((0 < rgb_arr[0] && rgb_arr[0] < 50) && (0 < rgb_arr[1] && rgb_arr[1] < 50) && (0 < rgb_arr[2] && rgb_arr[2] < 50)) {
+                return 'b';  // black
         }
+
+        return '\0';
 }
