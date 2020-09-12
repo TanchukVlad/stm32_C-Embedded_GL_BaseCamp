@@ -43,26 +43,26 @@ struct sk_lcd lcd = {
 };
 
 
-char *color_full_name(char color)
+char *color_full_name(uint8_t color)
 {
         char *n;
         switch (color) {
-                case 'R':
+                case 0:
                         n = "Red";
                         break;
-                case 'G':
+                case 1:
                         n = "Green";
                         break;
-                case 'B':
+                case 2:
                         n = "Blue";
                         break;
-                case 'O':
+                case 3:
                         n = "Orange";
                         break;
-                case 'Y':
+                case 4:
                         n = "Yellow";
                         break;
-                case 'b':
+                case 5:
                         n = "Black";
                         break;
                 default:

@@ -14,4 +14,4 @@ uint8_t color_scale(uint32_t freq, char color);
 void color_get_rgb(sk_pin_group group, sk_pin pin, uint32_t ms, uint8_t *rgb_arr);
 
 
-char color_name(uint8_t *rgb_arr);
+uint8_t color_name(uint8_t *rgb_arr);

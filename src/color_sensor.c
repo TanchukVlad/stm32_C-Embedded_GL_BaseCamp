@@ -85,21 +85,21 @@ void color_get_rgb(sk_pin_group group, sk_pin pin, uint32_t ms, uint8_t *rgb_arr
 }
 
 
-char color_name(uint8_t *rgb_arr)
+uint8_t color_name(uint8_t *rgb_arr)
 {
         if ((149 < rgb_arr[0] && rgb_arr[0] < 256) && (59 < rgb_arr[1] && rgb_arr[1] < 76) && (44 < rgb_arr[2] && rgb_arr[2] < 76)) {
-                return 'R';  // Red
+                return 0;  // Red
         } else if ((69 < rgb_arr[0] && rgb_arr[0] < 101) && (80 < rgb_arr[1] && rgb_arr[1] < 256) && (60 < rgb_arr[2] && rgb_arr[2] < 95)) {
-                return 'G';  // Green
+                return 1;  // Green
         } else if ((40 < rgb_arr[0] && rgb_arr[0] < 80) && (70 < rgb_arr[1] && rgb_arr[1] < 170) && (100 < rgb_arr[2] && rgb_arr[2] < 256)) {
-                return 'B';  // Blue
+                return 2;  // Blue
         } else if ((180 < rgb_arr[0] && rgb_arr[0] < 220) && (90 < rgb_arr[1] && rgb_arr[1] < 105) && (75 < rgb_arr[2] && rgb_arr[2] < 90)) {
-                return 'O';  // Orange
+                return 3;  // Orange
         } else if ((200 < rgb_arr[0] && rgb_arr[0] < 256) && (175 < rgb_arr[1] && rgb_arr[1] < 256) && (65 < rgb_arr[2] && rgb_arr[2] < 125)) {
-                return 'Y';  // Yellow
+                return 4;  // Yellow
         } else if ((0 < rgb_arr[0] && rgb_arr[0] < 50) && (0 < rgb_arr[1] && rgb_arr[1] < 50) && (0 < rgb_arr[2] && rgb_arr[2] < 50)) {
-                return 'b';  // black
+                return 5;  // Brown
+        } else {
+                return 6;
         }
-
-        return '\0';
 }

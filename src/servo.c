@@ -82,3 +82,31 @@ void pwm_set_servo(uint8_t ch_index, uint8_t deg)
         uint16_t dc_val = 11 * deg + 380;  //convert deg
         pwm_set_dc(ch_index, dc_val);
 }
+
+
+void servo_choose_cell(uint8_t ch_index, uint8_t cell)
+{
+        switch (cell) {
+                case 0: // Red
+                        pwm_set_servo(ch_index, 26);
+                        break;
+                case 1: // Green
+                        pwm_set_servo(ch_index, 52);
+                        break;
+                case 2: // Blue
+                        pwm_set_servo(ch_index, 78);
+                        break;
+                case 3: // Orange
+                        pwm_set_servo(ch_index, 104);
+                        break;
+                case 4: // Yellow
+                        pwm_set_servo(ch_index, 130);
+                        break;
+                case 5: // brown
+                        pwm_set_servo(ch_index, 156);
+                        break;
+                default:
+                        pwm_set_servo(ch_index, 0);
+                        break;
+                }
+}
