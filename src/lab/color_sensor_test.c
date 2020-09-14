@@ -1,6 +1,7 @@
 #include "color_sensor.h"
 #include "printf.h"
-#include "clock_168mhz.h"
+#include "servo.h"
+//#include "clock_168mhz.h"
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/cm3/sync.h>
 #include <libopencm3/cm3/nvic.h>
@@ -54,16 +55,13 @@ char *color_full_name(uint8_t color)
                         n = "Green";
                         break;
                 case 2:
-                        n = "Blue";
+                        n = "Yellow";
                         break;
                 case 3:
                         n = "Orange";
                         break;
                 case 4:
-                        n = "Yellow";
-                        break;
-                case 5:
-                        n = "Black";
+                        n = "Violet";
                         break;
                 default:
                         n = "Color?";
@@ -78,8 +76,6 @@ int main (void)
         rcc_periph_clock_enable(RCC_GPIOE);
         rcc_periph_clock_enable(RCC_GPIOD);
 
-        clock_init();
-
         sk_pin_group_mode_setup(lcd_group, MODE_OUTPUT);
         sk_pin_group_mode_setup(cs_s_group, MODE_OUTPUT);
         sk_pin_mode_setup(lcd_rs, MODE_OUTPUT);
@@ -92,6 +88,10 @@ int main (void)
         sk_pin_set(green, false);
 
         sk_pin_mode_setup(cs_out, MODE_INPUT);
+
+        clock_init();
+        pwm_init();
+        servo_init();
 
         uint32_t period = 168000000ul / 10000ul;
         uint8_t priority = 2;
@@ -109,10 +109,14 @@ int main (void)
         uint8_t blue_freq = 0;
         uint8_t green_freq = 0;
 
+        pwm_set_freq(50);   // 50Hz
+
+        pwm_set_servo(SERVO_CH1, 90);
+
         while(1)
         {
                 uint8_t rgb[3];
-                color_get_rgb(cs_s_group, cs_out, 10, rgb);
+                color_get_rgb(cs_s_group, cs_out, 50, rgb);
 
                 char *name = color_full_name(color_name(rgb));
 

@@ -16,6 +16,7 @@
 
 uint32_t color_read_freq(sk_pin pin, uint32_t ms)
 {
+        sk_tick_delay_ms(100);
         uint32_t cur = sk_tick_get_current();
         uint32_t delta = (sk_tick_get_rate_hz() / 1000) * ms;
         uint32_t next = cur + delta;
@@ -51,16 +52,16 @@ uint8_t color_scale(uint32_t freq, char color)
 
         switch (color) {
                 case 'R':
-                        scale = 17;
+                        scale = 10;//17;
                         break;
                 case 'G':
-                        scale = 23;
+                        scale = 10;//23;
                         break;
                 case 'B':
-                        scale = 17;
+                        scale = 10;//17;
                         break;
                 default:
-                        scale = 10;
+                        scale = 10;//10;
                         break;
         }
 
@@ -80,26 +81,34 @@ void color_get_rgb(sk_pin_group group, sk_pin pin, uint32_t ms, uint8_t *rgb_arr
         sk_pin_group_set(group, 0b1011);
         rgb_arr[2] = color_scale(color_read_freq(pin, ms), 'B');
         //clear
-        sk_pin_group_set(group, 0b0111);
-        sk_tick_delay_ms(10);
+        //sk_pin_group_set(group, 0b0111);
+        //sk_tick_delay_ms(10);
 }
 
 
 uint8_t color_name(uint8_t *rgb_arr)
 {
-        if ((149 < rgb_arr[0] && rgb_arr[0] < 256) && (59 < rgb_arr[1] && rgb_arr[1] < 76) && (44 < rgb_arr[2] && rgb_arr[2] < 76)) {
+        if ((28 <= rgb_arr[0] && rgb_arr[0] <= 30)
+                && (22 <= rgb_arr[1] && rgb_arr[1] <= 24)
+                && (28 <= rgb_arr[2] && rgb_arr[2] <= 30)) {
                 return 0;  // Red
-        } else if ((69 < rgb_arr[0] && rgb_arr[0] < 101) && (80 < rgb_arr[1] && rgb_arr[1] < 256) && (60 < rgb_arr[2] && rgb_arr[2] < 95)) {
+        } else if ((26 <= rgb_arr[0] && rgb_arr[0] <= 28)
+                && (25 <= rgb_arr[1] && rgb_arr[1] <= 27)
+                && (29 <= rgb_arr[2] && rgb_arr[2] <= 31)) {
                 return 1;  // Green
-        } else if ((40 < rgb_arr[0] && rgb_arr[0] < 80) && (70 < rgb_arr[1] && rgb_arr[1] < 170) && (100 < rgb_arr[2] && rgb_arr[2] < 256)) {
-                return 2;  // Blue
-        } else if ((180 < rgb_arr[0] && rgb_arr[0] < 220) && (90 < rgb_arr[1] && rgb_arr[1] < 105) && (75 < rgb_arr[2] && rgb_arr[2] < 90)) {
+        } else if ((30 <= rgb_arr[0] && rgb_arr[0] <= 35)
+                && (27 <= rgb_arr[1] && rgb_arr[1] <= 31)
+                && (31 <= rgb_arr[2] && rgb_arr[2] <= 34)) {
+                return 2;  // Yellow
+        } else if ((31 <= rgb_arr[0] && rgb_arr[0] <= 33)
+                && (23 <= rgb_arr[1] && rgb_arr[1] <= 26)
+                && (29 <= rgb_arr[2] && rgb_arr[2] <= 32)) {
                 return 3;  // Orange
-        } else if ((200 < rgb_arr[0] && rgb_arr[0] < 256) && (175 < rgb_arr[1] && rgb_arr[1] < 256) && (65 < rgb_arr[2] && rgb_arr[2] < 125)) {
-                return 4;  // Yellow
-        } else if ((0 < rgb_arr[0] && rgb_arr[0] < 50) && (0 < rgb_arr[1] && rgb_arr[1] < 50) && (0 < rgb_arr[2] && rgb_arr[2] < 50)) {
-                return 5;  // Brown
+        } else if ((24 <= rgb_arr[0] && rgb_arr[0] <= 27)
+                && (22 <= rgb_arr[1] && rgb_arr[1] <= 24)
+                && (30 <= rgb_arr[2] && rgb_arr[2] <= 32)) {
+                return 4;  // Violet
         } else {
-                return 6;
+                return 5;
         }
 }

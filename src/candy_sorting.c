@@ -1,14 +1,16 @@
 #include "color_sensor.h"
 #include "servo.h"
 #include "printf.h"
+#include <libopencm3/stm32/exti.h>
+#include <libopencm3/cm3/scb.h>
 
 #define S1_ANGLE_1 180
-#define S1_ANGLE_2 135
-#define S1_ANGLE_3 90
+#define S1_ANGLE_2 90
+#define S1_ANGLE_3 5
 
-#define POS1_DELAY 2000
-#define POS2_DELAY 1000
-#define POS3_DELAY 2000
+#define POS1_DELAY 600
+#define POS2_DELAY 500
+#define POS3_DELAY 1000
 
 sk_pin lcd_rs = { .port = PORTE, .pin = 7, .isinverse = false };
 sk_pin lcd_rw = { .port = PORTE, .pin = 10, .isinverse = false };
@@ -39,6 +41,7 @@ sk_pin_group cs_s_group = {
 
 int main(void)
 {
+        rcc_periph_clock_enable(RCC_GPIOA);
         rcc_periph_clock_enable(RCC_GPIOE);
         rcc_periph_clock_enable(RCC_GPIOD);
 
@@ -67,11 +70,13 @@ int main(void)
         lcd_print_text(&lcd, "Candy sorting!");
         sk_tick_delay_ms(1000);
         sk_lcd_set_addr(&lcd, 0x00);
-        lcd_print_text(&lcd, "Starting...");
+        lcd_print_text(&lcd, "Starting...   ");
 
         pwm_set_freq(50);   // 50Hz
-        // Red, Green, Blue, Orange, Yellow, Brown, Unknown
-        uint16_t count_arr[] = {0, 0, 0, 0, 0, 0, 0};
+        // Red, Green, Yellow, Orange, Violet, Unknown
+        uint16_t count_arr[] = {0, 0, 0, 0, 0, 0};
+
+        servo_start(SERVO_CH2);
 
         while (1) {
                 pwm_set_servo(SERVO_CH1, S1_ANGLE_1);
@@ -87,7 +92,7 @@ int main(void)
 
                 pwm_set_servo(SERVO_CH1, S1_ANGLE_3);
                 char buffer[32];
-                snprintf(buffer, sk_arr_len(buffer), "R=%u G=%u B=%u\nO=%u Y=%u Br=%u",
+                snprintf(buffer, sk_arr_len(buffer), "R=%u G=%u Y=%u\nO=%u V=%u U=%u",
                         count_arr[0], count_arr[1], count_arr[2], count_arr[3],
                         count_arr[4], count_arr[5]);
                 lcd_clear_display(&lcd);

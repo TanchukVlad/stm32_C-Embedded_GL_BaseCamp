@@ -23,3 +23,6 @@ void pwm_set_servo(uint8_t ch_index, uint8_t deg);
 
 
 void servo_choose_cell(uint8_t ch_index, uint8_t cell);
+
+
+void servo_start(uint8_t ch_index);

@@ -20,6 +20,16 @@ inline sk_attr_alwaysinline void __WFI(void)
 }
 
 
+inline sk_attr_alwaysinline void __WFE(void)
+{
+        __asm__ volatile ("WFE");
+}
+
+
+inline sk_attr_alwaysinline void __NOP(void)
+{
+        __asm__ volatile ("nop");
+}
 /**
  * Return SysTick counter value.
  */
