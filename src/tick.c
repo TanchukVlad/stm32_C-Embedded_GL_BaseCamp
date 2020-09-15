@@ -11,15 +11,13 @@ void sk_attr_weak sys_tick_handler(void)
 
 bool sk_tick_init(uint32_t rel_val, uint8_t priority)
 {
-        if (rel_val & 0xFF000000)
-        {
+        if (rel_val & 0xFF000000) {
                 // Bits 31:24 Reserved, must be kept cleared. More Programing manual p.248
                 return false;
         }
 
         bool div8 = false;
-        if (!(rel_val % 8))
-        {
+        if (!(rel_val % 8)) {
                 rel_val /= 8;
                 div8 = true;
         }
@@ -51,8 +49,7 @@ uint32_t sk_tick_get_rate_hz(void)
         // clocksource (1 << 0) -> div8
         // clocksource (1 << 2) -> without div 8
         // clocksource = STK_CSR & STK_CSR_CLKSOURCE = 0 -> div8
-        if (!(STK_CSR & STK_CSR_CLKSOURCE))
-        {
+        if (!(STK_CSR & STK_CSR_CLKSOURCE)) {
                 return (rcc_ahb_frequency/systick_get_reload()) / 8;
         }
         return rcc_ahb_frequency/systick_get_reload();

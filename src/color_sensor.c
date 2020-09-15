@@ -9,7 +9,7 @@
  *
  * We set the pin group for s0, s1, s2, s3, OE.
  * OUT transmit output frequency, so this frequency is read by read_freq().
- * read_freq() was based on TIMx.
+ * color_read_freq() was based on TIMx.
  */
 #include "color_sensor.h"
 
@@ -29,7 +29,7 @@ uint32_t color_read_freq(sk_pin pin, uint32_t ms)
                         while (!sk_pin_read(pin));
                         // wait cs_out = 0
                         while (sk_pin_read(pin));
-                        //after cs_out 1 and 0 (it is one impulse) increment freq_cnt
+                        // after cs_out 1 and 0 (it is one impulse) increment freq_cnt
                         freq_cnt++;
                 }
         } else {
@@ -89,8 +89,8 @@ void color_get_rgb(sk_pin_group group, sk_pin pin, uint32_t ms, uint8_t *rgb_arr
 uint8_t color_name(uint8_t *rgb_arr)
 {
         if ((28 <= rgb_arr[0] && rgb_arr[0] <= 30)
-                && (22 <= rgb_arr[1] && rgb_arr[1] <= 24)
-                && (28 <= rgb_arr[2] && rgb_arr[2] <= 30)) {
+                && (22 <= rgb_arr[1] && rgb_arr[1] <= 23)
+                && (29 <= rgb_arr[2] && rgb_arr[2] <= 31)) {
                 return 0;  // Red
         } else if ((26 <= rgb_arr[0] && rgb_arr[0] <= 28)
                 && (25 <= rgb_arr[1] && rgb_arr[1] <= 27)
@@ -100,13 +100,13 @@ uint8_t color_name(uint8_t *rgb_arr)
                 && (27 <= rgb_arr[1] && rgb_arr[1] <= 31)
                 && (31 <= rgb_arr[2] && rgb_arr[2] <= 34)) {
                 return 2;  // Yellow
-        } else if ((31 <= rgb_arr[0] && rgb_arr[0] <= 33)
-                && (23 <= rgb_arr[1] && rgb_arr[1] <= 26)
-                && (29 <= rgb_arr[2] && rgb_arr[2] <= 32)) {
+        } else if ((30 <= rgb_arr[0] && rgb_arr[0] <= 34)
+                && (24 <= rgb_arr[1] && rgb_arr[1] <= 26)
+                && (30 <= rgb_arr[2] && rgb_arr[2] <= 32)) {
                 return 3;  // Orange
         } else if ((24 <= rgb_arr[0] && rgb_arr[0] <= 27)
                 && (22 <= rgb_arr[1] && rgb_arr[1] <= 24)
-                && (30 <= rgb_arr[2] && rgb_arr[2] <= 32)) {
+                && (29 <= rgb_arr[2] && rgb_arr[2] <= 32)) {
                 return 4;  // Violet
         } else {
                 return 5;

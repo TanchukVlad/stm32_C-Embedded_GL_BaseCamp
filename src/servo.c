@@ -111,9 +111,17 @@ void servo_choose_cell(uint8_t ch_index, uint8_t cell)
 
 void servo_start(uint8_t ch_index)
 {
-        for (int i = 0; i < 6; i++)
-        {
-                servo_choose_cell(ch_index, i);
-                sk_tick_delay_ms(3000);
+        if (ch_index == SERVO_CH1) {
+                pwm_set_servo(ch_index, 5);
+                sk_tick_delay_ms(1000);
+                pwm_set_servo(ch_index, 90);
+                sk_tick_delay_ms(1000);
+                pwm_set_servo(ch_index, 180);
+                sk_tick_delay_ms(1000);
+        } else if (ch_index == SERVO_CH2) {
+                for (int i = 0; i < 6; i++) {
+                        servo_choose_cell(ch_index, i);
+                        sk_tick_delay_ms(2000);
+                }
         }
 }

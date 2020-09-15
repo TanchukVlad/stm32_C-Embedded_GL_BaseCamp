@@ -8,9 +8,9 @@
 #define S1_ANGLE_2 90
 #define S1_ANGLE_3 5
 
-#define POS1_DELAY 600
-#define POS2_DELAY 500
-#define POS3_DELAY 1000
+#define POS1_DELAY 300   //600
+#define POS2_DELAY 30   //500
+#define POS3_DELAY 100  //1000
 
 sk_pin lcd_rs = { .port = PORTE, .pin = 7, .isinverse = false };
 sk_pin lcd_rw = { .port = PORTE, .pin = 10, .isinverse = false };
@@ -76,6 +76,7 @@ int main(void)
         // Red, Green, Yellow, Orange, Violet, Unknown
         uint16_t count_arr[] = {0, 0, 0, 0, 0, 0};
 
+        servo_start(SERVO_CH1);
         servo_start(SERVO_CH2);
 
         while (1) {
@@ -95,7 +96,7 @@ int main(void)
                 snprintf(buffer, sk_arr_len(buffer), "R=%u G=%u Y=%u\nO=%u V=%u U=%u",
                         count_arr[0], count_arr[1], count_arr[2], count_arr[3],
                         count_arr[4], count_arr[5]);
-                lcd_clear_display(&lcd);
+                //lcd_clear_display(&lcd);
                 sk_lcd_set_addr(&lcd, 0x00);
                 lcd_print_text(&lcd, buffer);
                 sk_tick_delay_ms(POS3_DELAY);
