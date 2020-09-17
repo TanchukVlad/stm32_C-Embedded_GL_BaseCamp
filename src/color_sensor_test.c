@@ -1,7 +1,8 @@
 #include "color_sensor.h"
 #include "printf.h"
 #include "servo.h"
-//#include "clock_168mhz.h"
+#include "clock_168mhz.h"
+#include "freq_read.h"
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/cm3/sync.h>
 #include <libopencm3/cm3/nvic.h>
@@ -17,7 +18,7 @@ sk_pin lcd_rw = { .port = PORTE, .pin = 10, .isinverse = false };
 sk_pin lcd_en = { .port = PORTE, .pin = 11, .isinverse = false };
 sk_pin lcd_bkl = { .port = PORTE, .pin = 9, .isinverse = false };
 
-sk_pin cs_out = { .port = PORTD, .pin = 7, .isinverse = false };
+sk_pin cs_out = { .port = PORTA, .pin = 5, .isinverse = false };
 
 sk_pin_group lcd_group = {
         .port = PORTE,
@@ -73,6 +74,7 @@ char *color_full_name(uint8_t color)
 
 int main (void)
 {
+        rcc_periph_clock_enable(RCC_GPIOA);
         rcc_periph_clock_enable(RCC_GPIOE);
         rcc_periph_clock_enable(RCC_GPIOD);
 
@@ -87,11 +89,13 @@ int main (void)
 
         sk_pin_set(green, false);
 
-        sk_pin_mode_setup(cs_out, MODE_INPUT);
+        gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO5);
 
         clock_init();
         pwm_init();
         servo_init();
+        timer3_init();
+        timer2_init();
 
         uint32_t period = 168000000ul / 10000ul;
         uint8_t priority = 2;
@@ -103,29 +107,47 @@ int main (void)
         lcd_init_4bit(&lcd);
         sk_lcd_set_backlight(&lcd, true);
 
-        sk_pin_set(green, true);
-
-        uint8_t red_freq = 0;
-        uint8_t blue_freq = 0;
-        uint8_t green_freq = 0;
-
         pwm_set_freq(50);   // 50Hz
+        sk_tick_delay_ms(1000);
 
         pwm_set_servo(SERVO_CH1, 90);
 
+        uint32_t num[20];
+        snprintf(num, sk_arr_len(num), "%u", rcc_apb1_frequency);
+        lcd_clear_display(&lcd);
+        sk_lcd_set_addr(&lcd, 0x00);
+        lcd_print_text(&lcd, num);
+
+        sk_tick_delay_ms(5000);
+        sk_pin_set(green, true);
         while(1)
         {
-                uint8_t rgb[3];
-                color_get_rgb(cs_s_group, cs_out, 50, rgb);
+                uint32_t rgb[3];
+                //color_get_rgb(cs_s_group, cs_out, 50, rgb);
 
-                char *name = color_full_name(color_name(rgb));
+                //red
+                sk_pin_group_set(cs_s_group, 0b0011);
+                freq_read_start(1000);
+                sk_pin_toggle(green);
+                rgb[0] = freq_read();
+                //green
+                sk_pin_group_set(cs_s_group, 0b1111);
+                freq_read_start(1000);
+                sk_pin_toggle(green);
+                rgb[1] = freq_read();
+                //blue
+                sk_pin_group_set(cs_s_group, 0b1011);
+                freq_read_start(1000);
+                sk_pin_toggle(green);
+                rgb[2] = freq_read();
+
+                //char *name = color_full_name(color_name(rgb));
 
                 char buffer[32];
-                snprintf(buffer, sk_arr_len(buffer), "R=%u G=%u\nB=%u %s",
-                        (unsigned int)rgb[0], (unsigned int)rgb[1], (unsigned int)rgb[2], name);
+                snprintf(buffer, sk_arr_len(buffer), "R=%u G=%u\nB=%u",
+                        (unsigned int)rgb[0], (unsigned int)rgb[1], (unsigned int)rgb[2]);
                 lcd_clear_display(&lcd);
                 sk_lcd_set_addr(&lcd, 0x00);
                 lcd_print_text(&lcd, buffer);
-                sk_tick_delay_ms(500);
         }
 }
