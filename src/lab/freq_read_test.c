@@ -66,7 +66,7 @@ int main(void)
         lcd_mode_set();
         timer3_init();
         timer2_init();
-        timer4_init();
+        timer5_init();
         delay_timer_init();
         cm_enable_interrupts();
         lcd_init_4bit(&lcd);
@@ -81,13 +81,13 @@ int main(void)
                 sk_pin_toggle(green);
                 //red
                 sk_pin_group_set(cs_s_group, 0b0011);
-                rgb[0] = freq_read(1000);
+                rgb[0] = freq_read(500);
                 //green
                 sk_pin_group_set(cs_s_group, 0b1111);
-                rgb[1] = freq_read(1000);
+                rgb[1] = freq_read(500);
                 //blue
                 sk_pin_group_set(cs_s_group, 0b1011);
-                rgb[2] = freq_read(1000);
+                rgb[2] = freq_read(500);
                 char buffer[32];
                 snprintf(buffer, sk_arr_len(buffer), " R=%lu G=%lu \nB=%lu",
                          rgb[0], rgb[1], rgb[2]);

@@ -11,7 +11,7 @@ static const uint32_t DELAY_CONTROL_US = 39;
 // Clear Display and Return Home commands
 static const uint32_t DELAY_CLRRET_US = 1530;
 // Read Data from RAM and Write Data to RAM commands
-static const uint32_t DELAY_READWRITE_US = 43;
+static const uint32_t DELAY_READWRITE_US = 430;
 // Read Busy Flag and Address command
 static const uint32_t DELAY_BUSYFLAG_US = 0;
 
@@ -52,12 +52,6 @@ static void lcd_delay_us(struct sk_lcd *lcd, uint32_t us)
 		msfunc(us / 1000);
 	if (us % 1000)
 		usfunc(us % 1000);
-}
-
-
-void lcd_poweron_delay(struct sk_lcd *lcd)
-{
-	lcd_delay_us(lcd, DELAY_INIT0_US);
 }
 
 
@@ -152,26 +146,34 @@ void lcd_entry_mode_set(struct sk_lcd *lcd, bool id, bool sh)
  */
 void lcd_init_4bit(struct sk_lcd *lcd)
 {
-	lcd_rsrw_set(lcd, 0, 0);
-	lcd_data_set_halfbyte(lcd, 0b0011);
-	lcd_delay_us(lcd, DELAY_INIT0_US);
+	for (int i = 0; i < 5; i++) {
+		sk_pin_group_set(*lcd->pin_group_data, 0x00);
+	        lcd_delay_us(lcd, DELAY_INIT0_US);
 
-	lcd_rsrw_set(lcd, 0, 0);
-	lcd_data_set_halfbyte(lcd, 0b0010);
-	lcd_delay_us(lcd, DELAY_INIT1_US);
+		lcd_rsrw_set(lcd, 0, 0);
+		lcd_data_set_halfbyte(lcd, 0b0011);
+		lcd_delay_us(lcd, DELAY_INIT0_US);
 
-	lcd_rsrw_set(lcd, 0, 0);
-	lcd_data_set_halfbyte(lcd, 0b0010);
-	lcd_delay_us(lcd, DELAY_CONTROL_US);
+		lcd_rsrw_set(lcd, 0, 0);
+		lcd_data_set_halfbyte(lcd, 0b0010);
+		lcd_delay_us(lcd, DELAY_INIT1_US);
 
-        // Set display on/off
-        lcd_display_on_off_control(lcd, true, false, false);
+		lcd_rsrw_set(lcd, 0, 0);
+		lcd_data_set_halfbyte(lcd, 0b0010);
+		lcd_delay_us(lcd, DELAY_CONTROL_US);
 
-	// Clear display
-	lcd_clear_display(lcd);
+	        // Set display on/off
+	        lcd_display_on_off_control(lcd, true, false, false);
 
-	// Entry mode set
-	lcd_entry_mode_set(lcd, true, false);
+		// Clear display
+		lcd_clear_display(lcd);
+
+		// Entry mode set
+		lcd_entry_mode_set(lcd, true, false);
+
+		sk_lcd_set_backlight(lcd, true);
+		lcd_delay_us(lcd, 2000);
+	}
 }
 
 

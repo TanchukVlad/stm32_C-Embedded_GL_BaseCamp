@@ -48,7 +48,6 @@ struct sk_lcd {
 };
 
 //sk_err sk_lcd_set_backlight(struct sk_lcd *lcd, uint8_t level);
-void lcd_poweron_delay(struct sk_lcd *lcd);
 
 
 void sk_lcd_set_backlight(struct sk_lcd *lcd, bool mode);

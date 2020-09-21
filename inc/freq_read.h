@@ -13,7 +13,7 @@ void timer3_init(void);
 void timer2_init(void);
 
 
-void timer4_init(void);
+void timer5_init(void);
 
 
 uint32_t freq_read(uint32_t ms);

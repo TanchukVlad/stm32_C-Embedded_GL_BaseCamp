@@ -49,17 +49,16 @@ void timer2_init(void)
 }
 
 
-void timer4_init(void)
+void timer5_init(void)
 {
-        rcc_periph_clock_enable(RCC_TIM4);
-        timer_set_prescaler(TIM4, 0);
-        timer_set_mode(TIM3, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
-        timer_slave_set_filter(TIM2, TIM_IC_OFF);
-        timer_slave_set_prescaler(TIM2, TIM_IC_PSC_OFF);
-        timer_slave_set_polarity(TIM2, TIM_ET_RISING);
+        rcc_periph_clock_enable(RCC_TIM5);
+        timer_set_prescaler(TIM5, 0);
+        timer_set_mode(TIM5, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+        timer_slave_set_filter(TIM5, TIM_IC_OFF);
+        timer_slave_set_prescaler(TIM5, TIM_IC_PSC_OFF);
+        timer_slave_set_polarity(TIM5, TIM_ET_RISING);
         // Set Trigger selection
-        // For TIM2 internal trigger connection TIM3_TRGO -> ITR2 (TS = 010)
-        timer_slave_set_trigger(TIM2, TIM_SMCR_TS_MASK);
+        timer_slave_set_trigger(TIM5, TIM_SMCR_TS_MASK);
 }
 
 
@@ -73,9 +72,9 @@ uint32_t freq_read(uint32_t ms)
 
         timer_enable_counter(TIM3);
         timer_enable_counter(TIM2);
-        timer_enable_counter(TIM4);
+        timer_enable_counter(TIM5);
         __asm__ volatile ("wfi");
-        return  (__freq * 1000 / ms);
+        return  (__freq * 1000 / ms) / 1000;
 }
 
 
@@ -83,8 +82,8 @@ void tim3_isr(void)
 {
         timer_clear_flag(TIM3, TIM_SR_UIF);
         __freq = timer_get_counter(TIM2) +
-                 (timer_get_counter(TIM4) * TIM_ARR(TIM2)) + timer_get_counter(TIM4);
+                 (timer_get_counter(TIM5) * TIM_ARR(TIM2)) + timer_get_counter(TIM5);
         timer_set_counter(TIM2, 0);
         timer_set_counter(TIM3, 0);
-        timer_set_counter(TIM4, 0);
+        timer_set_counter(TIM5, 0);
 }
