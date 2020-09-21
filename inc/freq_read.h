@@ -3,7 +3,9 @@
 #include <libopencm3/cm3/cortex.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/timer.h>
-
+#include <stdint.h>
+#include <stdio.h>
+#include <stdbool.h>
 
 void timer3_init(void);
 
@@ -11,7 +13,7 @@ void timer3_init(void);
 void timer2_init(void);
 
 
-void freq_read_start(uint16_t sec);
+void timer4_init(void);
 
 
-uint32_t freq_read(void);
+uint32_t freq_read(uint32_t ms);
