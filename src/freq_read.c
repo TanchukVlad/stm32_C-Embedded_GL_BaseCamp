@@ -4,7 +4,7 @@
  * like a master timer for TIM2.
  * The TIM2 counter is clocked by any active edge on the ETRF signal.
  * The TIM3 is counting time in which TIM2 is counting signals on the ETRF.
- * The TIM 5 is counting num of owerflow of the TIM2.
+ * The TIM5 is counting num of owerflow of the TIM2.
  * In the tim3_isr calc frequency: TIM2_CNT + TIM5_CNT * TIM2_ARR + TIM5_CNT
  */
 #include "freq_read.h"
@@ -82,7 +82,7 @@ uint32_t freq_read(uint32_t ms)
         timer_enable_counter(TIM2);
         timer_enable_counter(TIM5);
         __asm__ volatile ("wfi");
-        return  (__freq * 1000 / ms) / 1000;
+        return  __freq / ms;
 }
 
 

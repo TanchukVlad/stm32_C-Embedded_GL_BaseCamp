@@ -31,25 +31,25 @@ void color_get_rgb(sk_pin_group group, uint32_t ms, uint32_t *rgb_arr)
 
 uint8_t color_name(uint32_t *rgb_arr)
 {
-        if ((24 <= rgb_arr[0] && rgb_arr[0] <= 25)
-                && (19 <= rgb_arr[1] && rgb_arr[1] <= 21)
-                && (25 <= rgb_arr[2] && rgb_arr[2] <= 27)) {
+        if ((33 <= rgb_arr[0] && rgb_arr[0] <= 34)
+                && (27 <= rgb_arr[1] && rgb_arr[1] <= 29)
+                && (33 <= rgb_arr[2] && rgb_arr[2] <= 36)) {
                 return 0;  // Red
-        } else if ((23 <= rgb_arr[0] && rgb_arr[0] <= 25)
-                && (22 <= rgb_arr[1] && rgb_arr[1] <= 24)
-                && (26 <= rgb_arr[2] && rgb_arr[2] <= 28)) {
+        } else if ((32 <= rgb_arr[0] && rgb_arr[0] <= 34)
+                && (30 <= rgb_arr[1] && rgb_arr[1] <= 32)
+                && (35 <= rgb_arr[2] && rgb_arr[2] <= 37)) {
                 return 1;  // Green
-        } else if ((27 <= rgb_arr[0] && rgb_arr[0] <= 33)
-                && (24 <= rgb_arr[1] && rgb_arr[1] <= 29)
-                && (27 <= rgb_arr[2] && rgb_arr[2] <= 32)) {
+        } else if ((36 <= rgb_arr[0] && rgb_arr[0] <= 43)
+                && (32 <= rgb_arr[1] && rgb_arr[1] <= 37)
+                && (35 <= rgb_arr[2] && rgb_arr[2] <= 40)) {
                 return 2;  // Yellow
-        } else if ((26 <= rgb_arr[0] && rgb_arr[0] <= 32)
-                && (20 <= rgb_arr[1] && rgb_arr[1] <= 23)
-                && (25 <= rgb_arr[2] && rgb_arr[2] <= 28)) {
+        } else if ((35 <= rgb_arr[0] && rgb_arr[0] <= 41)
+                && (27 <= rgb_arr[1] && rgb_arr[1] <= 31)
+                && (34 <= rgb_arr[2] && rgb_arr[2] <= 38)) {
                 return 3;  // Orange
-        } else if ((21 <= rgb_arr[0] && rgb_arr[0] <= 23)
-                && (19 <= rgb_arr[1] && rgb_arr[1] <= 21)
-                && (26 <= rgb_arr[2] && rgb_arr[2] <= 28)) {
+        } else if ((30 <= rgb_arr[0] && rgb_arr[0] <= 32)
+                && (27 <= rgb_arr[1] && rgb_arr[1] <= 29)
+                && (34 <= rgb_arr[2] && rgb_arr[2] <= 36)) {
                 return 4;  // Violet
         } else {
                 return 5;

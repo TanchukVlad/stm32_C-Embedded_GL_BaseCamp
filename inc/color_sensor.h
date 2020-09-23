@@ -16,7 +16,7 @@ typedef struct sk_pin_group sk_pin_group;
 void color_get_rgb(sk_pin_group group, uint32_t ms, uint32_t *rgb_arr);
 
 /**
- * Color sensor get RGB.
+ * Color sensor get name of color.
  * @*rgb_arr: with R, G and B components.
  *
  * Context: Compares value from rgb_arr and returns number of cell in which
