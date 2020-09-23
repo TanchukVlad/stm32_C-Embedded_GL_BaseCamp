@@ -1,12 +1,17 @@
-#include "color_sensor.h"
-#include "printf.h"
 #include "clock_168mhz.h"
+#include "lcd_hd44780.h"
+#include "delay.h"
+#include "freq_read.h"
+#include "color_sensor.h"
 #include "servo.h"
-#include <libopencm3/stm32/rcc.h>
-#include <libopencm3/cm3/sync.h>
-#include <libopencm3/cm3/nvic.h>
+#include "printf.h"
 #include <libopencm3/cm3/cortex.h>
-#include <libopencm3/stm32/timer.h>
+#include <libopencm3/cm3/scb.h>
+#include <libopencm3/cm3/nvic.h>
+#include <libopencm3/cm3/scb.h>
+#include <libopencm3/stm32/rcc.h>
+#include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/exti.h>
 #include <stdint.h>
 #include <stddef.h>
 
@@ -75,24 +80,23 @@ int main (void)
         rcc_periph_clock_enable(RCC_GPIOE);
         rcc_periph_clock_enable(RCC_GPIOD);
 
-        sk_pin_group_mode_setup(lcd_group, MODE_OUTPUT);
-        sk_pin_group_mode_setup(cs_s_group, MODE_OUTPUT);
-        sk_pin_mode_setup(lcd_rs, MODE_OUTPUT);
-        sk_pin_mode_setup(lcd_rw, MODE_OUTPUT);
-        sk_pin_mode_setup(lcd_en, MODE_OUTPUT);
-        sk_pin_mode_setup(lcd_bkl, MODE_OUTPUT);
-        sk_pin_mode_setup(lcd_bkl, MODE_OUTPUT);
+        sk_pin_group_mode_setup(lcd_group, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE);
+        sk_pin_group_mode_setup(cs_s_group, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE);
+        sk_pin_mode_setup(lcd_rs, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE);
+        sk_pin_mode_setup(lcd_rw, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE);
+        sk_pin_mode_setup(lcd_en, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE);
+        sk_pin_mode_setup(lcd_bkl, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE);
 
-        gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO15);
-        gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_2MHZ, GPIO15);
-        gpio_set_af(GPIOA, GPIO_AF1, GPIO15);
+        gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO5);
+        gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_2MHZ, GPIO5);
+        gpio_set_af(GPIOA, GPIO_AF1, GPIO5);
 
         clock_init();
-        pwm_init();
+        servo_pwm_init();
         servo_init();
-        timer3_init();
-        timer2_init();
-        timer5_init();
+        freq_read_timer3_init();
+        freq_read_timer2_init();
+        freq_read_timer5_init();
         delay_timer_init();
 
         cm_enable_interrupts();
@@ -101,9 +105,9 @@ int main (void)
         lcd_init_4bit(&lcd);
         sk_lcd_set_backlight(&lcd, true);
 
-        pwm_set_freq(50);   // 50Hz
+        servo_pwm_set_freq(50);   // 50Hz
 
-        pwm_set_servo(SERVO_CH1, 90);
+        servo_pwm_set_servo(SERVO_CH1, 90);
         while(1)
         {
                 uint32_t rgb[3];

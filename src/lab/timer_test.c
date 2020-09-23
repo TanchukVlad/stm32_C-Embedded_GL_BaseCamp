@@ -62,7 +62,6 @@ void delay_us(uint32_t val)
 
         timer_enable_counter(TIM7);
         __WFI();	// Enter sleep mode. WFI -- wait for interrupt
-        timer_enable_counter(TIM7);
 }
 
 static void delay_ms(uint32_t val)

@@ -1,8 +1,17 @@
+/**
+ * Read frequency from PA5.
+ * Using TIM3 like a master timer, TIM2 like a slave timer for TIM3 and
+ * like a master timer for TIM2.
+ * The TIM2 counter is clocked by any active edge on the ETRF signal.
+ * The TIM3 is counting time in which TIM2 is counting signals on the ETRF.
+ * The TIM 5 is counting num of owerflow of the TIM2.
+ * In the tim3_isr calc frequency: TIM2_CNT + TIM5_CNT * TIM2_ARR + TIM5_CNT
+ */
 #include "freq_read.h"
 
 volatile uint32_t __freq;
 
-void timer3_init(void)
+void freq_read_timer3_init(void)
 {
         rcc_periph_clock_enable(RCC_TIM3);
         // Fin = 84MHz
@@ -12,7 +21,7 @@ void timer3_init(void)
         timer_set_counter(TIM3, 0);
         timer_set_mode(TIM3, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
         timer_one_shot_mode(TIM3);
-        timer_set_master_mode(TIM3, TIM_CR2_MMS_ENABLE);  //!!!!
+        timer_set_master_mode(TIM3, TIM_CR2_MMS_ENABLE);
         //Set Master/Slave mode
         TIM_SMCR(TIM3) |= TIM_SMCR_MSM;
         timer_disable_preload(TIM3);
@@ -27,7 +36,7 @@ void timer3_init(void)
 }
 
 
-void timer2_init(void)
+void freq_read_timer2_init(void)
 {
         rcc_periph_clock_enable(RCC_TIM2);
         timer_set_prescaler(TIM2, 0);
@@ -35,7 +44,6 @@ void timer2_init(void)
         timer_set_period(TIM2, 4294967295);
         timer_set_counter(TIM2, 0);
         timer_set_master_mode(TIM2, TIM_CR2_MMS_UPDATE);
-        //timer_set_mode(TIM2, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
         timer_slave_set_filter(TIM2, TIM_IC_OFF);
         timer_slave_set_prescaler(TIM2, TIM_IC_PSC_OFF);
         timer_slave_set_polarity(TIM2, TIM_ET_RISING);
@@ -49,7 +57,7 @@ void timer2_init(void)
 }
 
 
-void timer5_init(void)
+void freq_read_timer5_init(void)
 {
         rcc_periph_clock_enable(RCC_TIM5);
         timer_set_prescaler(TIM5, 0);

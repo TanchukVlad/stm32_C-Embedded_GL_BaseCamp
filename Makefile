@@ -1,10 +1,10 @@
 # The main (project top) file without .c
-TARGET = adcbasics
+TARGET = candy_sorting
 # All source files go here:
 SRCS = $(TARGET).c
 # other sources added like that
-SRCS += pin.c tick.c lcd_hd44780.c printf.c 
-SRCS += color_sensor.c servo.c freq_read.c clock_168mhz.c
+SRCS += pin.c tick.c lcd_hd44780.c printf.c delay.c
+SRCS +=  color_sensor.c freq_read.c servo.c clock_168mhz.c
 # User defines
 DEFINES = GLSK_BOARD=1
 # The libs which are linked to the resulting target

@@ -94,13 +94,14 @@ void sk_pin_group_toggle(sk_pin_group group, uint16_t val)
 }
 
 
-void sk_pin_mode_setup(sk_pin pin, enum sk_mode mode)
+void sk_pin_mode_setup(sk_pin pin, uint8_t mode, uint8_t pull_up_down)
 {
-	gpio_mode_setup(sk_pin_port_to_gpio(pin.port), mode, GPIO_PUPD_NONE, (1 << pin.pin));
+	gpio_mode_setup(sk_pin_port_to_gpio(pin.port), mode,
+					    pull_up_down , (1 << pin.pin));
 }
 
 
-void sk_pin_group_mode_setup(sk_pin_group group, enum sk_mode mode)
+void sk_pin_group_mode_setup(sk_pin_group group, uint8_t mode, uint8_t pull_up_down)
 {
-	gpio_mode_setup(sk_pin_port_to_gpio(group.port), mode, GPIO_PUPD_NONE, group.pins);
+	gpio_mode_setup(sk_pin_port_to_gpio(group.port), mode, pull_up_down, group.pins);
 }

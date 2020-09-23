@@ -1,3 +1,6 @@
+/**
+ * Milliseconds and microseconds delay using TIM7.
+ */
 #include "delay.h"
 
 
@@ -23,7 +26,7 @@ void delay_timer_init(void)
         // Set URS bit to update only at overflow (when auto-reload value is reached)
         timer_update_on_overflow(TIM7);
 
-        nvic_set_priority(NVIC_TIM7_IRQ, 2);
+        nvic_set_priority(NVIC_TIM7_IRQ, 1);
         nvic_enable_irq(NVIC_TIM7_IRQ);
 }
 

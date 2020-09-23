@@ -1,10 +1,18 @@
+/**
+ *  Initialization and installation of pulse width modulation for servo.
+ *  Servos connected to the PD12 and PD13.
+ *  OC channel for PD12 and PD13 TIM_OC1 and TIM_OC2.
+ *  For installation PWM we used TIM4. 
+ */
 #include "servo.h"
+#include "pin.h"
+#include "delay.h"
 
 
 static uint32_t current_timer_cnt_period;
 
 
-void pwm_init(void)
+void servo_pwm_init(void)
 {
         rcc_periph_clock_enable(RCC_TIM4);
         // The alignment and count direction.
@@ -50,7 +58,7 @@ void servo_init(void)
 }
 
 
-void pwm_set_freq(uint32_t pwm_freq)
+void servo_pwm_set_freq(uint32_t pwm_freq)
 {
         current_timer_cnt_period = (rcc_apb1_frequency * 2 / (TIM4_PSC * pwm_freq));
         timer_set_period(TIM4, current_timer_cnt_period);
@@ -61,7 +69,7 @@ void pwm_set_freq(uint32_t pwm_freq)
 
 
 /* set DC value for a channel */
-void pwm_set_dc(uint8_t ch_index, uint16_t dc_value_permillage)
+void servo_pwm_set_dc(uint8_t ch_index, uint16_t dc_value_permillage)
 {
 
         switch (ch_index) {
@@ -77,10 +85,10 @@ void pwm_set_dc(uint8_t ch_index, uint16_t dc_value_permillage)
 }
 
 
-void pwm_set_servo(uint8_t ch_index, uint8_t deg)
+void servo_pwm_set_servo(uint8_t ch_index, uint8_t deg)
 {
         uint16_t dc_val = 11 * deg + 380;  //convert deg
-        pwm_set_dc(ch_index, dc_val);
+        servo_pwm_set_dc(ch_index, dc_val);
 }
 
 
@@ -88,22 +96,22 @@ void servo_choose_cell(uint8_t ch_index, uint8_t cell)
 {
         switch (cell) {
                 case 0: // Red
-                        pwm_set_servo(ch_index, 0);
+                        servo_pwm_set_servo(ch_index, 0);
                         break;
                 case 1: // Green
-                        pwm_set_servo(ch_index, 36);
+                        servo_pwm_set_servo(ch_index, 36);
                         break;
                 case 2: // Yellow
-                        pwm_set_servo(ch_index, 72);
+                        servo_pwm_set_servo(ch_index, 72);
                         break;
                 case 3: // Orange
-                        pwm_set_servo(ch_index, 108);
+                        servo_pwm_set_servo(ch_index, 108);
                         break;
                 case 4: // Violet
-                        pwm_set_servo(ch_index, 144);
+                        servo_pwm_set_servo(ch_index, 144);
                         break;
                 default:
-                        pwm_set_servo(ch_index, 180);
+                        servo_pwm_set_servo(ch_index, 180);
                         break;
                 }
 }
@@ -112,11 +120,11 @@ void servo_choose_cell(uint8_t ch_index, uint8_t cell)
 void servo_start(uint8_t ch_index)
 {
         if (ch_index == SERVO_CH1) {
-                pwm_set_servo(ch_index, 5);
+                servo_pwm_set_servo(ch_index, 5);
                 delay_ms(1000);
-                pwm_set_servo(ch_index, 90);
+                servo_pwm_set_servo(ch_index, 90);
                 delay_ms(1000);
-                pwm_set_servo(ch_index, 180);
+                servo_pwm_set_servo(ch_index, 180);
                 delay_ms(1000);
         } else if (ch_index == SERVO_CH2) {
                 for (int i = 0; i < 6; i++) {

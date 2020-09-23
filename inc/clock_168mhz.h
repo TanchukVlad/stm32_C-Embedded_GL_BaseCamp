@@ -6,4 +6,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
+/**
+ * 168 MHz clock initialization.
+ *
+ * Context: Sets SYSCLK - 168 MHz, AHB - 168 MHz, APB1 - 42 MHz, APB2 - 84 MHz.
+ */
 void clock_init(void);

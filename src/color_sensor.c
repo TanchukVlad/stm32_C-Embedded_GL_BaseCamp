@@ -7,12 +7,13 @@
  * OE - Enable for fo (active low).
  * OUT - Output frequency (fo).
  *
- * We set the pin group for s0, s1, s2, s3, OE.
- * OUT transmit output frequency, so this frequency is read by freq_read().
+ * We set the pin group for s0, s1, s2, s3.
+ * OUT transmit output frequency, so this frequency is read by freq_read() from freq_read.h
  * freq_read() was based on TIM3, TIM2 and TIM4.
  */
 #include "color_sensor.h"
-
+#include "pin.h"
+#include "freq_read.h"
 
 void color_get_rgb(sk_pin_group group, uint32_t ms, uint32_t *rgb_arr)
 {

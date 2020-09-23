@@ -55,20 +55,25 @@ struct sk_lcd lcd = {
         .is4bitinterface = 1
 };
 
+void lcd_mode_set(void)
+{
+        rcc_periph_clock_enable(RCC_GPIOE);
+        sk_pin_group_mode_setup(lcd_group, MODE_OUTPUT);
+        sk_pin_mode_setup(lcd_rs, MODE_OUTPUT);
+        sk_pin_mode_setup(lcd_rw, MODE_OUTPUT);
+        sk_pin_mode_setup(lcd_en, MODE_OUTPUT);
+        sk_pin_mode_setup(lcd_bkl, MODE_OUTPUT);
+}
+
 int main(void)
 {
 	initialise_monitor_handles();
 	printf("Monitor initialized. WE GET IT THROUGH SEMIHOSTING\n");
 
-        rcc_periph_clock_enable(RCC_GPIOE);
+
         rcc_periph_clock_enable(RCC_GPIOD);
 
-        sk_pin_group_mode_setup(lcd_group, MODE_OUTPUT);
         sk_pin_group_mode_setup(cs_s_group, MODE_OUTPUT);
-        sk_pin_mode_setup(lcd_rs, MODE_OUTPUT);
-        sk_pin_mode_setup(lcd_rw, MODE_OUTPUT);
-        sk_pin_mode_setup(lcd_en, MODE_OUTPUT);
-        sk_pin_mode_setup(lcd_bkl, MODE_OUTPUT);
 
         sk_pin_mode_setup(green, MODE_OUTPUT);
 

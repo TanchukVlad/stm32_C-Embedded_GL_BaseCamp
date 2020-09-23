@@ -22,13 +22,6 @@ enum sk_port {
 	PORTH = 7
 };
 
-enum sk_mode {
-	MODE_INPUT = GPIO_MODE_INPUT,
-	MODE_OUTPUT = GPIO_MODE_OUTPUT,
-	MODE_AF = GPIO_MODE_AF,
-	MODE_ANALOG = GPIO_MODE_ANALOG
-};
-
 
 /**
  * GPIO pin definition
@@ -167,15 +160,13 @@ void sk_pin_group_toggle(sk_pin_group group, uint16_t val);
  * Set pin mode
  * @mode: pin mode is taken from libopencm3
  *
- * Doesn't set pull up and pull down.
  */
-void sk_pin_mode_setup(sk_pin pin, enum sk_mode mode);
+void sk_pin_mode_setup(sk_pin pin, uint8_t mode, uint8_t pull_up_down);
 
 
 /**
  * Set pin group mode
  * @mode: pin mode is taken from libopencm3
  *
- * Doesn't set pull up and pull down.
  */
-void sk_pin_group_mode_setup(sk_pin_group group, enum sk_mode mode);
+void sk_pin_group_mode_setup(sk_pin_group group, uint8_t mode, uint8_t pull_up_down);
