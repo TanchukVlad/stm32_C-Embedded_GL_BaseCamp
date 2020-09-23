@@ -1,0 +1,8 @@
+lcd_hd44780 - libsk GL-SK on-board LCD abstraction layer
+========================================================
+
+The display is WH1602B (based on HD44780 controller)
+
+
+.. c:autodoc:: inc/lcd_hd44780.h src/lcd_hd44780.c
+   :clang: -I/lib/clang/10.0.0/include, -I../inc, -std=gnu18, -DHAWKMOTH
