@@ -1,3 +1,4 @@
+#pragma once
 /**
  * Pin abstraction over libopencm3/stm32
  * Using libopencm3/stm32/gpio.h
