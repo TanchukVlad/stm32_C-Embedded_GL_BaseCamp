@@ -44,10 +44,11 @@ make html
 
 
 ## Useful links
+[libopencm3 Developer Documentation](http://libopencm3.org/docs/latest/html/)
 
-     1. [libopencm3 Developer Documentation](http://libopencm3.org/docs/latest/html/)
-     2. [STM32F407VG STMicroelectronics Resources page](https://www.st.com/en/microcontrollers-microprocessors/stm32f407vg.html#resource)
-     3. [STM32F4DISCOVERY STMicroelectronics Resources page](https://www.st.com/content/st_com/en/products/evaluation-tools/product-evaluation-tools/mcu-mpu-eval-tools/stm32-mcu-mpu-eval-tools/stm32-discovery-kits/stm32f4discovery.html#resource)
+[STM32F407VG STMicroelectronics Resources page](https://www.st.com/en/microcontrollers-microprocessors/stm32f407vg.html#resource)
+
+[STM32F4DISCOVERY STMicroelectronics Resources page](https://www.st.com/content/st_com/en/products/evaluation-tools/product-evaluation-tools/mcu-mpu-eval-tools/stm32-mcu-mpu-eval-tools/stm32-discovery-kits/stm32f4discovery.html#resource)
 
 
 ## License
