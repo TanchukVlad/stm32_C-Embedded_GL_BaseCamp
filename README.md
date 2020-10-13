@@ -24,6 +24,7 @@ Program starts with calibration. You can set your cells in the correct place.
 If you were late, you can repeat calibration.
 During the program, you are able to make pause until you press button.
 
+[Project presentation](https://docs.google.com/presentation/d/e/2PACX-1vSCIwYOvp6jbJQgWiTQ_Rc6_EWYQUmUHT2FK3WG33Tbxdxhi_H-71_--jQaKFYIAwLQQHDmDD71gvK3/pub?start=false&loop=false&delayms=3000)
 
 ## How to start
 Recursively clone the repository:
